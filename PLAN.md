@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum: Faz 0 bitti (commit onayını bekliyor) · Faz 1 sürüyor — iskelet ve portlar hazır, Flutter ile eşleşme doğrulandı, sıra S1.1–S1.5'te (sende)
+Plan tarihi: 2026-10-08 · Durum (2026-10-09): Faz 0 ve Faz 1 bitti (Faz 1'in son değişiklikleri commit onayını bekliyor) · sırada Faz 2 açılışı ve sekme düzeni kararı
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -93,8 +93,12 @@ sonra gerçek hıza göre güncellenir.
   ile Figtree kaydı, geçici `SetupCheck` yardımcı kodu.
 - Proje dosyası Xcode sihirbazıyla değil, Xcode 27 "iOS App (SwiftUI)" şablonunun
   ayarları okunarak elle yazıldı. Şablondaki gibi Swift 5 modunda bırakıldı;
-  6'ya geçiş S0.1'in işi. Test hedefi yok: domain testleri pakette, UI testi
-  hedefi Faz 8'de Xcode'dan eklenecek.
+  6'ya geçiş S0.1'in işi. Uygulamanın kendi test hedefi yok: domain testleri
+  pakette, UI testi hedefi Faz 8'de Xcode'dan eklenecek.
+- Paket testleri Xcode'dan da koşar (2026-10-09): `DolmusCore` projeye klasör
+  başvurusuyla bağlı (kök paket) ve paylaşılan `IzmirDolmus` şemasının Test
+  eylemi `DolmusCoreTests`'i içeriyor; ⌘U seçili simülatörde çalıştırır. Paket
+  `XCLocalSwiftPackageReference` ile bağlıyken şema test hedefini göremiyordu.
 - **Konu anlatımı:** UIKit'ten SwiftUI'a zihin haritası — AppDelegate/SceneDelegate
   → `App`/`Scene`; `UIView` (kalıcı nesne) → `View` (geçici tarif); `body`'nin
   yeniden hesaplanması ve kimlik; şablondaki eşzamanlılık ayarlarının anlamı.
@@ -102,7 +106,7 @@ sonra gerçek hıza göre güncellenir.
 - **Sonuç (2026-10-08):** üçü de sağlandı. Team seçilmedi (`DEVELOPMENT_TEAM`
   boş): simülatör için gerekmiyor, gerçek cihaza kurulumdan önce seçilecek.
 
-### [ ] Faz 1 — Veri katmanı: Swift 6 ile domain (~3-4 saat)
+### [x] Faz 1 — Veri katmanı: Swift 6 ile domain (~3-4 saat)
 - **Çıktı:** dört JSON ana aktör dışında yüklenir; bölme/çıkarma kuralları
   uygulanmış hatlar düz bir listede görünür; sonucun Flutter ile aynı olduğu testle kanıtlı.
 - **Ben (yapıldı):** modeller (`Coordinate`, `DolmusRoute`, `DolmusHat`,
@@ -132,9 +136,11 @@ sonra gerçek hıza göre güncellenir.
   - Dart dizgi işlemleri UTF-16 birimiyle, Swift'inkiler yazı birimi ve Unicode
     eşdeğerliğiyle çalışır; veride birleşen işaretli adlar olduğu için arama ve
     sıralama `DartText.swift`'teki bayt düzeyindeki yardımcılarla yapılır.
-- **Faz sonunda silinecek:** `DolmusCore/Sources/DolmusCore/Unwritten.swift` (yer
-  tutucu hatası), `IzmirDolmus/Support/SetupCheck.swift` ve `RootView`'daki
-  `CheckRow` (S1.5 ile kullanılmaz olur).
+- **Sonuç (2026-10-09):** S1.1–S1.5 yazıldı ve doğrulandı: 27 test yeşil (altın
+  dosyalar dahil), uygulama simülatörde 410 hattı listeliyor, JSON çözmenin ana
+  thread dışında yapıldığı testle kanıtlı (`@concurrent` silinince test
+  kırılıyor). Yer tutucu hatası (`Unwritten.swift`), `SetupCheck.swift` ve
+  `CheckRow` silindi.
 - **Konu anlatımı:** Swift 6 eşzamanlılık modeli (izolasyon alanları, MainActor
   varsayılanı, `nonisolated`, `@concurrent`, `Sendable`, veri yarışı güvenliği;
   GCD karşılıkları), değer tipleriyle modelleme, `Codable` derinlemesine, Swift Testing.

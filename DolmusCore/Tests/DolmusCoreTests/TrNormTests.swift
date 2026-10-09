@@ -1,3 +1,6 @@
+import Testing
+@testable import DolmusCore
+
 @Suite("trNorm")
 struct TrNormTests {
     @Test("Türkçe harfleri sadeleştirir, küçültür, boşlukları toplar", arguments: [

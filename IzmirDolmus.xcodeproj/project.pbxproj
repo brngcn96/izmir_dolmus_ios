@@ -12,6 +12,7 @@
 
 /* Begin PBXFileReference section */
 		D0A000000000000000000004 /* IzmirDolmus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IzmirDolmus.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D0A000000000000000000019 /* DolmusCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = DolmusCore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -51,6 +52,7 @@
 			isa = PBXGroup;
 			children = (
 				D0A000000000000000000005 /* IzmirDolmus */,
+				D0A000000000000000000019 /* DolmusCore */,
 				D0A000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -113,9 +115,6 @@
 			);
 			mainGroup = D0A000000000000000000002;
 			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				D0A000000000000000000016 /* XCLocalSwiftPackageReference "DolmusCore" */,
-			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D0A000000000000000000003 /* Products */;
 			projectDirPath = "";
@@ -352,13 +351,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		D0A000000000000000000016 /* XCLocalSwiftPackageReference "DolmusCore" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = DolmusCore;
-		};
-/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		D0A000000000000000000017 /* DolmusCore */ = {
