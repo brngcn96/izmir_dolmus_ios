@@ -125,6 +125,10 @@ public struct DolmusData: Sendable {
         landmarkNorms = landmarks.map { trNorm($0.name) }
     }
 
+    /// Hiç hattı ve yeri olmayan veri: yükleme bitene kadar arayüzün
+    /// gösterebileceği boş durum.
+    public static let empty = DolmusData(routes: [], geoms: [:], duraklar: [], landmarks: [])
+
     /// Kimliği verilen hat; yoksa `nil`.
     public func hat(id: String) -> DolmusHat? {
         hatIndex[id].map { hats[$0] }

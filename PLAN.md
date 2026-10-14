@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-10-09): Faz 0 ve Faz 1 bitti (Faz 1'in son değişiklikleri commit onayını bekliyor) · sırada Faz 2 açılışı ve sekme düzeni kararı
+Plan tarihi: 2026-10-08 · Durum (2026-10-14): Faz 0–2 bitti (Faz 2 commit onayını bekliyor) · sırada Faz 3
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -146,16 +146,56 @@ sonra gerçek hıza göre güncellenir.
   GCD karşılıkları), değer tipleriyle modelleme, `Codable` derinlemesine, Swift Testing.
 - **Bitti sayılır:** altın dosyalar dahil testler yeşil; ana thread'de JSON çözme yok.
 
-### [ ] Faz 2 — Gezinme iskeleti: Liquid Glass tab bar + NavigationStack + Router (~4-5 saat)
+### [x] Faz 2 — Gezinme iskeleti: Liquid Glass tab bar + NavigationStack + Router (~4-5 saat)
 - **Çıktı:** cam tab bar'lı sekmeli uygulama; Hatlar (ilçe grupları + anlık arama)
   → Hat detayı (temel); sekme başına bağımsız gezinme yığını; alt sayfa örneği.
 - **Karar noktası:** sekme düzeni — (A) Android'deki 5 sekme, (B) 4 sekme + ayrık
-  arama düğmesi olarak Hatlar. İkisini simülatörde deneyip seçeceksin.
+  arama düğmesi olarak Hatlar. S2.3'teki `hatsIsSearchTab` sabiti ikisi arasında
+  geçiş yapar; simülatörde deneyip seçeceksin. Karardan sonra sabit ve
+  kullanılmayan dal silinir.
+- **Karar (2026-10-14): B.** Hatlar, tab bar'ın yanında ayrı search button;
+  seçilince arama açılır (`.tabViewSearchActivation(.searchTabSelection)`).
+  Tab'ın başlığı "Hatlar" (görünmez, VoiceOver okur), simgesi büyüteç.
+- **Ben (yapıldı):** `AppTab`, kök (`RootView`: yükleme kapısı), `DataStore.data`,
+  hat detayının parçaları (`HatSummarySections`, `FareRowsSection`, `FareSheet`),
+  `HatDestinationView` (kimlikten hat), `HomeView` (Router ile programatik geçiş
+  örneği), `ComingSoonView`; `DolmusData.empty`.
 - **Sen:** S2.1 `enum Route: Hashable` + `NavigationStack(path:)` +
-  `navigationDestination(for:)` · S2.2 `@Observable` `Router` (seçili sekme + sekme
-  başına yol) ve `@Environment` ile dağıtımı · S2.3 `TabView` + `Tab` API + arama
-  rolü + `tabBarMinimizeBehavior` · S2.4 `.searchable` + açılır-kapanır ilçe
-  bölümleri · S2.5 `.sheet(item:)` + `presentationDetents`.
+  `navigationDestination(for:)` (`Navigation/Route.swift`; yol önce yerel
+  `@State`) · S2.2 `@Observable` `Router` (seçili sekme + sekme başına yol) ve
+  `@Environment` ile dağıtımı (`Router.swift`, `Route.swift`'in yeni hali,
+  `IzmirDolmusApp.swift`) · S2.3 `TabView` + `Tab` API + arama rolü +
+  `tabViewSearchActivation` + `tabBarMinimizeBehavior` (`MainTabView.swift`) · S2.4
+  `.searchable` + açılır-kapanır ilçe bölümleri (`Hatlar/HatListView.swift`) · S2.5
+  `.sheet(item:)` + `presentationDetents` (`Hatlar/HatDetailView.swift`).
+- **Doğrulama (2026-10-09):** altı durum (yer tutucular, S2.1 … S2.5) sırayla
+  derlendi; ekranlar ayrı bir simülatörde (iOS 27.0) görüntülendi: iki sekme
+  düzeni, ilçe bölümleri, arama sonuçları ve boş sonuç, detay, alt sayfa, Router
+  ile sekmeler arası geçiş. Dokunma gerektiren akışlar (satıra dokunup itme,
+  bölüm açma, yazarak arama, aynı sekmeye yeniden dokunup köke dönme) komut
+  satırından sürülemediği için başlangıç durumları ve Router üzerinden denendi;
+  elle denemesi sende.
+- **Sekme çubuğu notları (iOS 27.0 simülatörü):**
+  - `Tab(role: .search)` tek başına ayrık düğme olmaz; sıradan bir sekme gibi
+    sona yerleşir. Ayrık düğme ve alttaki arama alanı ancak `TabView`'a
+    `.tabViewSearchActivation(.searchTabSelection)` eklenince gelir: sekme
+    seçilince arama açılır, kapatılınca önceki sekmeye dönülür.
+  - `.searchable` `TabView`'a konursa arama alanı bütün sekmelerin gezinme
+    çubuğuna sızar; arama sekmesinin içinde (`HatListView`) durmalı.
+  - iOS 27'de `TabRole.prominent` ayrık düğmeyi özel simgeyle verir; en düşük
+    hedef 26.0 olduğu için kullanılmadı.
+  - Belge açıklamaları SDK'daki `.swiftdoc` dosyalarından okunabilir
+    (`strings` ile); `.swiftinterface` yalnızca imzaları verir.
+- **Gözlemler (2026-10-15, `Self._printChanges()` ile):**
+  - Tab içerikleri ilk seçildiklerinde oluşturuluyor; açılışta yalnızca
+    Anasayfa'nın `RouteStack`'i var.
+  - `Router.paths` tek property olduğu için bir tab'ın path'i değişince o ana
+    kadar oluşturulmuş bütün `RouteStack`'ler yeniden hesaplanıyor. Tab başına
+    ayrı bir `@Observable` nesne (`TabNavigation`, `let` ile tutulan) bunu yalnızca
+    path'i değişen tab'a indiriyor; deponun kopyasında denendi. Beş tab için
+    gerek görülmedi; ölçek büyürse geçilecek.
+  - Anasayfa'daki örnek düğme detail'i Hatlar tab'ının stack'ine açıyor; path
+    tab değişince korunuyor.
 - **Konu anlatımı:** NavigationStack derinlemesine (değer tabanlı gezinme, yol
   durumu, hedeflerin nerede tanımlanacağı, köke dönme, sheet mi push mu, sık
   hatalar), TabView ve Liquid Glass davranışı, UINavigationController/Coordinator karşılıkları.
@@ -174,6 +214,8 @@ sonra gerçek hıza göre güncellenir.
   Liquid Glass'ın nerede kullanılıp nerede kullanılmayacağı.
 - **Bitti sayılır:** favori değişikliği tüm ekranlara anında yansır ve yeniden
   açılışta kalır; koyu modda ve en büyük yazı boyutunda ekranlar bozulmaz.
+- **Not:** bir tab'dan açılan hat detail'i o tab'ın kendi stack'ine push edilir
+  (Favoriler → Favoriler'in stack'i); her `RouteStack` `Route.hat`'i zaten tanıyor.
 
 ### [ ] Faz 4 — Modern ağ katmanı (~4-5 saat)
 - **Çıktı:** İBB'den ücret tazeleme (yaklaşık 400 hat kodu, en çok 6 eşzamanlı

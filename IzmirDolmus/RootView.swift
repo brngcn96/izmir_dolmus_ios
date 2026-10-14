@@ -1,21 +1,13 @@
-//
-//  RootView.swift
-//  IzmirDolmus
-//
-//  Created by Baran Göcen on 8.10.2026.
-//
-
 import SwiftUI
-import DolmusCore
 
+/// Uygulamanın kökü: veriyi yükler, hazır olunca sekmeleri gösterir.
 struct RootView: View {
-    @State private var store = DataStore()
+    @Environment(DataStore.self) private var store
 
     var body: some View {
-        List(store.hats) { hat in
-            HatRow(hat: hat)
-        }
-        .overlay {
+        // `.task` dallara değil, kimliği değişmeyen `ZStack`'e bağlı: durum
+        // değişip dal değişse de görev yeniden başlamaz.
+        ZStack {
             switch store.phase {
             case .idle, .loading:
                 ProgressView("Hatlar yükleniyor…")
@@ -26,21 +18,11 @@ struct RootView: View {
                     description: Text(message)
                 )
             case .loaded:
-                EmptyView()
+                MainTabView()
             }
-        }
-        .safeAreaInset(edge: .top, alignment: .leading) {
-            Text("İzmir Dolmuş")
-                .font(.custom("Figtree-ExtraBold", size: 30, relativeTo: .largeTitle))
-                .foregroundStyle(.tint)
-                .padding(.horizontal)
         }
         .task {
             await store.load()
         }
     }
-}
-
-#Preview {
-    RootView()
 }
