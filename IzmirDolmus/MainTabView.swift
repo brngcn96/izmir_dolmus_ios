@@ -15,10 +15,10 @@ struct MainTabView: View {
                 RouteStack(tab: .map) { ComingSoonView(title: "Harita", systemImage: "map", phase: 5) }
             }
             Tab("Favoriler", systemImage: "star", value: AppTab.favorites) {
-                RouteStack(tab: .favorites) { ComingSoonView(title: "Favoriler", systemImage: "star", phase: 3) }
+                RouteStack(tab: .favorites) { FavoritesView() }
             }
             Tab("Ayarlar", systemImage: "gearshape", value: AppTab.settings) {
-                RouteStack(tab: .settings) { ComingSoonView(title: "Ayarlar", systemImage: "gearshape", phase: 3) }
+                RouteStack(tab: .settings) { SettingsView() }
             }
             // Başlık görünmez ama VoiceOver "Arayın" yerine "Hatlar" okur.
             Tab("Hatlar", systemImage: "magnifyingglass", value: AppTab.hats, role: .search) {

@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-10-14): Faz 0–2 bitti (Faz 2 commit onayını bekliyor) · sırada Faz 3
+Plan tarihi: 2026-10-08 · Durum (2026-10-15): Faz 0–3 bitti (Faz 3 commit onayını bekliyor) · sırada Faz 4
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -202,13 +202,40 @@ sonra gerçek hıza göre güncellenir.
 - **Bitti sayılır:** liste → detay → geri, sekme değiştirme ve köke dönme tutarlı;
   Router'dan programatik geçiş çalışır.
 
-### [ ] Faz 3 — Durum yönetimi ve tasarım sistemi (~4-5 saat)
+### [x] Faz 3 — Durum yönetimi ve tasarım sistemi (~4-5 saat)
 - **Çıktı:** Favoriler, Ayarlar (Ev/İş, son aramalar), tam Hat detayı (ücret
   bölgeleri, kilit nokta çipleri, oy/not); tema jetonları, Figtree, koyu mod, Dynamic Type.
-- **Sen:** S3.1 `UserStore` (favoriler, UserDefaults kalıcılığı) · S3.2 `@Bindable`/
-  `Binding` ile Ev/İş düzenleme · S3.3 `Layout` protokolüyle `FlowLayout` · S3.4
-  `ViewModifier` + `ButtonStyle` ile kart ve buton stilleri · S3.5 `glassEffect` +
-  `GlassEffectContainer` ile yüzen bir kontrol.
+- **Sen:** S3.1 `UserStore` (favoriler, Ev/İş, son aramalar; UserDefaults
+  kalıcılığı; `Stores/UserStore.swift`) · S3.2 `@Bindable`/`Binding` ile Ev/İş
+  düzenleme (`Sekmeler/SettingsView.swift`) · S3.3 `Layout` protokolüyle
+  `FlowLayout` (`Design/FlowLayout.swift`) · S3.4 `ViewModifier` + `ButtonStyle`
+  ile kart ve buton stilleri (`Design/Styles.swift`) · S3.5 `glassEffect` +
+  `GlassEffectContainer` ile yüzen kontrol (`Hatlar/HatActionBar.swift`).
+- **Ben (yapıldı):** tema token'ları ve Figtree yardımcıları (`Design/Theme.swift`,
+  ücret renkleri Assets'te açık/koyu), navigation bar başlıkları Figtree,
+  `FavoritesView`, Ayarlar parçaları (`SavedPlaceRow`, `PlacePickerView`,
+  `RecentPlacesSection`, `AboutSection`), `HatRow`'da favori yıldızı ve ücret
+  rengi, detail'de chip'ler; erişilebilirlik boyutlarında satırların alt alta
+  dizilmesi; `PlacePoint: Encodable` (+2 test); `UserDefaults` JSON yardımcısı.
+- **Kapsam değişikliği:** hat detail'indeki oy ve not Faz 4'e taşındı. Flutter'da
+  bunlar bir geri bildirim formu (`feedback_service` ile gönderiliyor); yerel oy
+  sayısı tek başına 0/1'den ibaret. Gönderimle birlikte yazılacak.
+- **Doğrulama (2026-10-15):** altı durum (yer tutucular, S3.1 … S3.5) derlendi.
+  Çözümler yerindeyken ayrı simülatörde: favoriler ekleniyor ve uygulama yeniden
+  açılınca kalıyor; Hatlar listesinde favori yıldızı görünüyor; Ev adresi
+  kaydediliyor; chip'ler satıra sarıyor; cam kontroller detail'de; açık, koyu ve
+  en büyük erişilebilirlik boyutunda görüntülendi. Erişilebilirlik boyutunda
+  satırlar ilk denemede kelime ortasından bölünüyordu, alt alta dizilerek
+  düzeltildi. Dokunarak yapılan akışlar (yıldıza basmak, yer seçmek, uzun basıp
+  favoriden çıkarmak) elle denenecek.
+- **Sonuç (2026-10-15):** S3.1–S3.5 yazıldı; verilen kodla birebir aynı, derleniyor,
+  29 test yeşil. Kontrolde benim tarafımda bir hata çıktı: `Theme.applyNavigationBarFonts()`
+  `App.init` içinde çağrılınca uygulamanın vurgu rengi (AccentColor) sistem
+  mavisine düşüyordu (seçili tab, varsayılan button'lar). Çağrı `RootView`'un
+  `onAppear`'ına taşındı; marka rengi açık ve koyu modda geri geldi, başlıklar
+  Figtree kaldı. Not: başlık puntosu açılıştaki yazı boyutuna göre bir kez
+  ayarlanıyor; uygulama açıkken yazı boyutu değişirse ancak yeniden açılışta
+  güncellenir.
 - **Konu anlatımı:** SwiftUI veri akışı (`@State`, `@Binding`, `@Observable`,
   `@Bindable`, `@Environment`), view kimliği ve ömrü, özel `Layout`, stiller,
   Liquid Glass'ın nerede kullanılıp nerede kullanılmayacağı.

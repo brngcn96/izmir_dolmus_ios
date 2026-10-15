@@ -4,24 +4,42 @@ import SwiftUI
 /// Hat listesindeki satır: hat adı, geçtiği ilçeler ve ücret aralığı.
 struct HatRow: View {
     let hat: DolmusHat
+    /// Favori hatların adının yanında yıldız gösterilsin mi.
+    var showsFavoriteMark = true
+
+    @Environment(UserStore.self) private var user
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline) {
+        // Erişilebilirlik yazı boyutlarında ad ile ücret yan yana sığmaz; alt alta dizilir.
+        let layout = typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 12))
+
+        layout {
             VStack(alignment: .leading, spacing: 2) {
-                Text(hat.name)
-                    .font(.headline)
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(hat.name)
+                        .font(.figtree(.headline, weight: .bold))
+                    if showsFavoriteMark && user.isFavorite(hat.id) {
+                        Image(systemName: "star.fill")
+                            .font(.caption)
+                            .foregroundStyle(.yellow)
+                            .accessibilityLabel("Favori")
+                    }
+                }
                 if !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.subheadline)
+                        .font(.figtree(.subheadline))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
             }
-            Spacer(minLength: 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
             Text(hat.feeLabel)
-                .font(.subheadline.weight(.semibold))
+                .font(.figtree(.subheadline, weight: .bold))
                 .monospacedDigit()
-                .foregroundStyle(.tint)
+                .foregroundStyle(Color.fee(hat.feeMin))
         }
     }
 
@@ -56,4 +74,5 @@ struct HatRow: View {
         ))
         HatRow(hat: DolmusHat(id: "M19#manavkuyu", name: "Buca - Manavkuyu", segments: [], ilce: "Buca / Konak"))
     }
+    .environment(UserStore(defaults: UserDefaults(suiteName: "preview")!))
 }

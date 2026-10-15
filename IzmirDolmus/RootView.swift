@@ -21,6 +21,14 @@ struct RootView: View {
                 MainTabView()
             }
         }
+        // Yazı tipini kendisi belirtmeyen bütün metinler Figtree olur.
+        .font(.figtree(.body))
+        // `App.init` içinde çağrılınca uygulamanın vurgu rengi (AccentColor)
+        // sistem mavisine düşüyordu; scene kurulduktan sonra çağrılmalı.
+        // Navigation bar'lar sekmelerle birlikte, yani bundan sonra oluşuyor.
+        .onAppear {
+            Theme.applyNavigationBarFonts()
+        }
         .task {
             await store.load()
         }

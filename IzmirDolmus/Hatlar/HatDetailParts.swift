@@ -10,10 +10,10 @@ struct HatSummarySections: View {
         Section {
             VStack(alignment: .leading, spacing: 4) {
                 Text(hat.name)
-                    .font(.title3.weight(.bold))
+                    .font(.figtree(.title3, weight: .extraBold))
                 if let ilce = hat.ilce, !ilce.isEmpty {
                     Text(ilce)
-                        .font(.subheadline)
+                        .font(.figtree(.subheadline))
                         .foregroundStyle(.secondary)
                 }
             }
@@ -32,8 +32,16 @@ struct HatSummarySections: View {
         }
         if !hat.keyStopNames.isEmpty {
             Section("Geçtiği kilit noktalar") {
-                Text(hat.keyStopNames.joined(separator: " · "))
-                    .font(.subheadline)
+                FlowLayout(spacing: 6) {
+                    ForEach(hat.keyStopNames, id: \.self) { name in
+                        Text(name)
+                            .font(.figtree(.footnote, weight: .medium))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color.brandSoft, in: .rect(cornerRadius: Theme.Radius.chip))
+                    }
+                }
+                .padding(.vertical, 4)
             }
         }
     }
@@ -63,8 +71,14 @@ struct FareRowsSection: View {
 private struct FareRow: View {
     let segment: DolmusRoute
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     var body: some View {
-        HStack(alignment: .firstTextBaseline) {
+        let layout = typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 12))
+
+        layout {
             VStack(alignment: .leading, spacing: 2) {
                 Text(segment.stops.count > 1 ? "\(segment.fromLabel) → \(segment.toLabel)" : segment.name)
                     .foregroundStyle(Color.primary)
@@ -74,10 +88,11 @@ private struct FareRow: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            Spacer(minLength: 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
             Text(segment.feeText)
-                .fontWeight(.semibold)
+                .font(.figtree(.body, weight: .bold))
                 .monospacedDigit()
+                .foregroundStyle(Color.fee(segment.fee))
         }
     }
 }
