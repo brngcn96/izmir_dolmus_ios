@@ -7,6 +7,8 @@ import SwiftUI
 /// taşınır; ekran açılırken güncel veriden bulunur.
 enum Route: Hashable {
     case hat(id: String)
+    case events
+    case event(id: String)
 }
 
 /// Bir sekmenin gezinme yığını: `Route` değerlerini ekranlara çevirir.
@@ -24,6 +26,10 @@ struct RouteStack<Root: View>: View {
                     switch route {
                     case .hat(let id):
                         HatDestinationView(hatID: id)
+                    case .events:
+                        EventsView()
+                    case .event(let id):
+                        EventDestinationView(eventID: id)
                     }
                 }
         }

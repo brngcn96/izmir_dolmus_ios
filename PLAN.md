@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-10-15): Faz 0–3 bitti (Faz 3 commit onayını bekliyor) · sırada Faz 4
+Plan tarihi: 2026-10-08 · Durum (2026-10-15): Faz 0–4 bitti · sırada Faz 5
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -244,14 +244,93 @@ sonra gerçek hıza göre güncellenir.
 - **Not:** bir tab'dan açılan hat detail'i o tab'ın kendi stack'ine push edilir
   (Favoriler → Favoriler'in stack'i); her `RouteStack` `Route.hat`'i zaten tanıyor.
 
-### [ ] Faz 4 — Modern ağ katmanı (~4-5 saat)
+### [x] Faz 4 — Modern ağ katmanı (~4-5 saat)
 - **Çıktı:** İBB'den ücret tazeleme (yaklaşık 400 hat kodu, en çok 6 eşzamanlı
   istek, ilerleme, iptal); Etkinlikler (liste, filtreler, detay, 6 saatlik
   önbellek); hava durumu; geri bildirim gönderimi.
-- **Sen:** S4.1 `Endpoint` + `APIClient.send` (durum kodu, decode, tipli hata) ·
-  S4.2 `withTaskGroup` ile sınırlı eşzamanlı ücret tazeleme · S4.3 `.task` +
-  `.refreshable` + yükleniyor/boş/hata durumları · S4.4 `AsyncImage` ile etkinlik
-  kartı · S4.5 sahte taşıyıcıyla ağ testi.
+- **Sen:** S4.1 `APIClient.send`: `Endpoint` → `URLRequest`, transport, durum
+  kodu, decode, typed throws ile `APIError`, `@concurrent`
+  (`DolmusCore/.../Network/APIClient.swift`) · S4.2 `FareRefresher.refresh`:
+  `withTaskGroup` ile en çok 6 eşzamanlı istek, ilerleme, iptal
+  (`DolmusCore/.../Fares/FareRefresher.swift`) · S4.3 `EventsView`: `.task` +
+  `.refreshable` + yükleniyor/hata/boş/liste (`Etkinlikler/EventsView.swift`) ·
+  S4.4 `EventCard`: `AsyncImage` fazları + `AnyLayout` (`Etkinlikler/EventCard.swift`)
+  · S4.5 `APIClientTests`: `actor FakeTransport` ile gerçek sunucuya gitmeyen
+  testler (`DolmusCoreTests/APIClientTests.swift`).
+- **Ben (yapıldı):**
+  - `DolmusCore`: `HTTPTransport` (+ `URLSession` uyumu), `APIError`,
+    `Endpoint` protocol'ü ve dört endpoint (İBB ücret, etkinlikler, Open-Meteo,
+    Google Form), `FileCache` (zaman damgalı JSON), `FareRow`/`FareTable`/
+    `FareRefreshResult`, `DolmusData.applyingLiveFares` + `fareCodes`
+    (`DolmusRoute`: `bakedFee`, `liveFee`, hesaplanan `fee`), `EventItem` (esnek
+    decode, iki tarih biçimi), `EventFeed`, `EventFilter`/`EventCategory`, Türkçe
+    tarih ve fiyat etiketleri, `WeatherInfo`, `HatFeedback`. Testler:
+    `NetworkModelTests`, `EventTests`, `LiveFaresTests`, `FileCacheTests`,
+    `FareRefresherTests`.
+  - Uygulama: `FareStore` (önbellek, 14 günde bir kendiliğinden tazeleme,
+    ilerleme, iptal), `EventsStore` (6 saatlik önbellek, süren isteği paylaşma),
+    `FeedbackStore` (oy ve not kalıcılığı, gönderim), `EnvironmentValues.apiClient`
+    (`@Entry`), etkinlik detayı ve filtre çubuğu (cam chip'ler, mekan sheet'i),
+    Ayarlar'da "Ücretler", hat detail'inde geri bildirim, Anasayfa'da hava durumu
+    (`async let`) ve Etkinlikler girişi.
+  - Senin dosyalarında küçük bağlantı değişiklikleri: `Route` (`.events`,
+    `.event(id:)`), `DataStore.applyLiveFares`, `SettingsView` (`FaresSection`),
+    `HatDetailView` (`HatFeedbackSection`), `IzmirDolmusApp` (üç yeni store).
+- **Doğrulama (2026-10-15):** altı durum (yer tutucular, S4.1 … S4.5) derlendi.
+  Yer tutucularla 53 test var, `FareRefresherTests`'in 4'ü kırmızı (S4.1 + S4.2
+  ile yeşile döner); hepsi yerindeyken 58 test yeşil. Çözümler yerindeyken ayrı
+  simülatörde gerçek ağla:
+  - 396 hat kodu yaklaşık 10 sn'de geldi, hiçbiri başarısız olmadı. 2235 ücret
+    satırının 1852'si İBB'deki adlarla eşleşti, 12'si gömülü veriden farklı
+    (ör. KRB02/KRB03 "Karaburun-Mordoğan" 45 → 130, MND07 yok → 70, TİR05 245 → 240).
+  - Etkinlikler (106 görünür), detay, filtreler, mekan sheet'i, boş sonuç, hava
+    durumu; açık, koyu ve en büyük yazı boyutu.
+  - Ağ yokluğu, iptal ve canlı ücretin detail'e yansıması sahte transport'la
+    denendi (gerçek sunucuya yük bindirmeden). Geri bildirim gerçek forma hiç
+    gönderilmedi; gönderim yolu sahte transport'la denendi.
+  - Dokunma gerektirenler (aşağı çekip yenileme, filtre menüleri, mekan seçimi,
+    iptal düğmesi, oy düğmeleri, gönderim) elle denenecek.
+- **Bulgular:**
+  - `withTaskGroup`'un body'si, onu çağıran fonksiyon `nonisolated(nonsending)`
+    olsa da çağıranın aktöründe kalmıyor (bu SDK'da deneyle görüldü). Body closure'ı
+    ancak `isolated` parametreyi yakalarsa onun aktöründe çalışıyor; parametreyi
+    `withTaskGroup(isolation:)`'a geçirmek tek başına yetmiyor. Bu yüzden
+    `FareRefresher`'ın ilerleme callback'i tipinde `@MainActor`.
+  - İçi boş bir `List` gruplu zemini çizmiyor (beyaz kalıyor); Etkinlikler'de
+    `scrollContentBackground(.hidden)` + `Color.canvas`.
+  - List satırındaki devre dışı button siyah çiziliyor; gönder düğmesinin rengi
+    duruma göre veriliyor.
+  - Kaynaktaki Ticketmaster saatleri UTC (`17:30Z` = 20:30). Flutter uygulaması
+    çevirmediği (`toLocal` yok) için büyük olasılıkla 3 saat erken (17:30)
+    gösteriyor; iOS İzmir saatiyle gösteriyor. Android'de düzeltilmeli.
+  - Flutter, bütün ücret istekleri başarısız olsa da tazeleme tarihini ilerletiyor
+    (14 gün yeniden denemiyor). iOS'ta hiç cevap gelmezse tarih ilerlemez.
+  - Canlı ücretlerin bindirilmesi debug'da 12 ms. İlk hali 38 ms'ydi; satırlar
+    artık kod başına bir kez normalize ediliyor, ilçe kopyaları kimlikle bulunuyor.
+  - Geri bildirim metnine "Platform: iOS …" satırı eklendi (iki uygulama aynı
+    forma yazıyor).
+  - Etkinlik detayındaki "Yol tarifi" Faz 6'da; "Haritada göster" şimdilik Harita
+    sekmesini açıyor (mekan Faz 5'te işaretlenecek).
+  - `@concurrent` deneyle: `APIClient.send` ana aktörden çağrıldığında transport
+    ana thread dışında çalışıyor; `@concurrent` silinince ana thread'de. Gerçek
+    `URLSession` iptal edilen isteği `URLError.cancelled` (-999) ile bitiriyor.
+- **Sonuç (2026-10-15):** S4.1–S4.5 yazıldı; verilen kodla birebir aynı, 58 test
+  yeşil. Kullanıcı Etkinlikler'de bir titreme buldu: listeyi aşağı kaydırıp tek
+  hamlede hızla yukarı fırlatınca, tepeye varırken navigation bar büyük başlıkla
+  küçük başlık arasında gidip geliyor ve bozuk bir yerleşimde (başlık geri
+  düğmesinin üstünde, arama alanı yok) kalabiliyordu.
+  - Ölçüm: geçici bir XCUITest projesi uygulamayı paket kimliğiyle açıp
+    fırlattı; ekran kaydının karelerinden içeriğin dikey kayması çıkarıldı.
+    Tepeye varışta kayma yönü 20 kez değişiyordu.
+  - Kök neden: `.safeAreaBar(edge: .top)` ile kaydırırken yüksekliği değişen bir
+    navigation bar (büyük başlığın küçülmesi ya da arama alanının gizlenmesi)
+    birlikte. Varyantlar: bar'sız 0, `safeAreaInset` 0 (ama kenar efekti yok,
+    içerik chip'lerin arasından görünüyor), büyük başlık + arama hep açık 21,
+    inline başlık + gizlenen arama 27, aramasız büyük başlık 25, inline başlık +
+    arama hep açık 0.
+  - Düzeltme (`EventsView`): `.navigationBarTitleDisplayMode(.inline)` ve
+    `.searchable(…, placement: .navigationBarDrawer(displayMode: .always), …)`;
+    üç ayrı fırlatmada yön değişimi 0, kenar efekti duruyor.
 - **Konu anlatımı:** yapılandırılmış eşzamanlılık (`async let`, `TaskGroup`, iptal,
   `.task` ömrü), ağ katmanı tasarımı (uç nokta, hata tipleri, zaman aşımı,
   önbellek), completion handler/OperationQueue karşılıkları.

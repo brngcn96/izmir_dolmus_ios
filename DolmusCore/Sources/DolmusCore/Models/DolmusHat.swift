@@ -4,7 +4,7 @@ public struct DolmusHat: Sendable, Equatable, Identifiable {
     /// `group_id`; bölünmüş hatlarda türetilmiş kimlik (ör. `M41#buca`).
     public let id: String
     public let name: String
-    public let segments: [DolmusRoute]
+    public internal(set) var segments: [DolmusRoute]
     /// İBB ücret servisindeki gerçek hat kodu. Normalde `id` ile aynıdır;
     /// bölünmüş hatlar ana hattın kodunu taşır ki ücreti aynı koddan çeksinler.
     public let apiCode: String

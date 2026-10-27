@@ -1,8 +1,8 @@
 import DolmusCore
 import SwiftUI
 
-/// Hat detayı: özet, kilit noktalar ve ücret bölgeleri. Bir ücret bölgesine
-/// dokununca güzergahındaki noktalar alt sayfada açılır.
+/// Hat detayı: özet, kilit noktalar, ücret bölgeleri ve geri bildirim. Bir
+/// ücret bölgesine dokununca güzergahındaki noktalar alt sayfada açılır.
 struct HatDetailView: View {
     let hat: DolmusHat
 
@@ -14,6 +14,7 @@ struct HatDetailView: View {
             FareRowsSection(segments: hat.segments) { segment in
                 selectedSegment = segment
             }
+            HatFeedbackSection(hat: hat)
         }
         .navigationTitle(hat.name)
         .navigationBarTitleDisplayMode(.inline)

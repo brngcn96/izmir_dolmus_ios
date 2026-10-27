@@ -1,7 +1,7 @@
 import DolmusCore
 import SwiftUI
 
-/// Ayarlar: kayıtlı adresler (Ev/İş), son aramalar, hakkında.
+/// Ayarlar: kayıtlı adresler (Ev/İş), son aramalar, ücretler, hakkında.
 struct SettingsView: View {
     @Environment(UserStore.self) private var user
 
@@ -15,6 +15,7 @@ struct SettingsView: View {
                 SavedPlaceRow(kind: .work, place: user.work) { editing = .work }
             }
             RecentPlacesSection()
+            FaresSection()
             AboutSection()
         }
         .navigationTitle("Ayarlar")

@@ -1,8 +1,10 @@
+import DolmusCore
 import SwiftUI
 
 /// Uygulamanın kökü: veriyi yükler, hazır olunca sekmeleri gösterir.
 struct RootView: View {
     @Environment(DataStore.self) private var store
+    @Environment(FareStore.self) private var fares
 
     var body: some View {
         // `.task` dallara değil, kimliği değişmeyen `ZStack`'e bağlı: durum
@@ -30,7 +32,17 @@ struct RootView: View {
             Theme.applyNavigationBarFonts()
         }
         .task {
+            await fares.loadCache()
             await store.load()
+            store.applyLiveFares(fares.table)
+            // Ücretler 14 günden eskiyse arka planda sessizce tazelenir.
+            if fares.isStale {
+                fares.refresh(codes: store.data.fareCodes)
+            }
+        }
+        // Tazeleme bitince (ya da iptal edilince) gelen ücretler hatlara yansır.
+        .onChange(of: fares.table) {
+            store.applyLiveFares(fares.table)
         }
     }
 }

@@ -1,23 +1,24 @@
 /// Uygulamanın salt okunur verisi: düzeltme kuralları uygulanmış hatlar,
 /// güzergah çizgileri ve yer sözlüğü.
 ///
-/// Bir kez kurulur, sonra değişmez. Değer tipi ve `Sendable` olduğu için ana
-/// aktör dışında kurulup ana aktöre kopyalanmadan taşınabilir.
+/// Bir kez kurulur; sonradan yalnızca ücretleri güncellenmiş kopyası üretilir
+/// (`applyingLiveFares`). Değer tipi ve `Sendable` olduğu için ana aktör dışında
+/// kurulup ana aktöre kopyalanmadan taşınabilir.
 public struct DolmusData: Sendable {
     /// Bir ilçe ve o ilçeden geçen hatlar.
     public struct District: Sendable, Identifiable {
         public let name: String
-        public let hats: [DolmusHat]
+        public internal(set) var hats: [DolmusHat]
 
         public var id: String { name }
     }
 
     /// Ana hatlar, ada göre sıralı.
-    public let hats: [DolmusHat]
+    public internal(set) var hats: [DolmusHat]
     /// Hatlar ilçe başlıkları altında; ilçeler ve içlerindeki hatlar ada göre
     /// sıralı. Birden çok ilçeden geçen hat her ilçenin altında yer alır;
     /// ilçesi bilinmeyenler "Diğer"dedir.
-    public let districts: [District]
+    public internal(set) var districts: [District]
     /// ESHOT durak adları ve diğer yer adları (yer sözlüğü).
     public let duraklar: [PlacePoint]
     /// Önemli noktalar: metro, İZBAN, hastane, AVM…

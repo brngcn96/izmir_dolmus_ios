@@ -13,7 +13,10 @@ public struct DolmusRoute: Sendable, Hashable, Identifiable, Decodable {
     public let stopsNorm: [String]
     public let distanceKm: Double?
     /// Veri dosyasındaki ücret (TL). Kararda ücreti olmayan satırlarda `nil`.
-    public let fee: Int?
+    public let bakedFee: Int?
+    /// İBB ücret servisinden gelen güncel ücret; tazeleme yapılmadıysa ya da
+    /// servis bu satır için ücret vermediyse `nil` (bkz. `applyingLiveFares`).
+    public internal(set) var liveFee: Int? = nil
     public let firstTime: Bool
     /// Hattın geçtiği ilçe(ler); birden çoksa " / " ile ayrılır.
     public let ilce: String?
@@ -37,21 +40,26 @@ public struct DolmusRoute: Sendable, Hashable, Identifiable, Decodable {
         self.stops = stops
         self.stopsNorm = stopsNorm
         self.distanceKm = distanceKm
-        self.fee = fee
+        self.bakedFee = fee
         self.firstTime = firstTime
         self.ilce = ilce
     }
 
     // Dosyadaki adlar snake_case; Swift tarafındaki adlarla burada eşlenir.
     // `init(from:)`'u derleyici bu anahtarlardan kendisi üretir.
+    // `liveFee` burada yok: dosyadan okunmaz, varsayılanı `nil`.
     enum CodingKeys: String, CodingKey {
-        case id, name, stops, fee, ilce
+        case id, name, stops, ilce
+        case bakedFee = "fee"
         case groupID = "group_id"
         case groupName = "group_name"
         case stopsNorm = "stops_norm"
         case distanceKm = "distance_km"
         case firstTime = "first_time"
     }
+
+    /// Gösterilen ücret: güncel ücret varsa o, yoksa veri dosyasındaki.
+    public var fee: Int? { liveFee ?? bakedFee }
 
     public var fromLabel: String { stops.first ?? "" }
     public var toLabel: String { stops.last ?? "" }

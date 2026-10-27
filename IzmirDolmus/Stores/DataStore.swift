@@ -36,4 +36,11 @@ final class DataStore {
             phase = .failed(error.localizedDescription)
         }
     }
+
+    /// Canlı ücretleri yüklü veriye uygular; veri henüz yüklenmediyse bir şey
+    /// yapmaz. Hep veri dosyasındaki ücretlerden hesaplanır.
+    func applyLiveFares(_ table: FareTable) {
+        guard case .loaded(let data) = phase else { return }
+        phase = .loaded(data.applyingLiveFares(table))
+    }
 }
