@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-10-27): Faz 0–5 bitti · sırada Faz 6 · çalışma düzeni değişti (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-10-27): Faz 0–6 bitti · sırada Faz 7 · çalışma düzeni değişti (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -383,15 +383,43 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
   `UIViewRepresentable` ile `MKMapView`'a ne zaman inilir.
 - **Bitti sayılır:** Flutter'daki harita senaryoları çalışır; kaydırma akıcı.
 
-### [ ] Faz 6 — Yol tarifi (~4-5 saat)
-- **Çıktı:** Nereden → Nereye ekranı (otomatik tamamlama, takas, konumum),
-  planlayıcı (aktarmasız + 1 aktarma), seçenek listesi, adım adım tarif, haritada
-  yürüme (kesik) ve dolmuş (renkli) bacakları, yürüme bacağını Apple Haritalar'da açma.
-- **Ben:** `journey_planner.dart` + `walk_barriers.dart` portu; örnek nokta
-  çiftleri için Flutter çıktılarıyla altın dosya testleri.
-- **Parçalar:** S6.1 `TripPlannerModel` · S6.2 `.task(id:)` ile debounce'lu otomatik
-  tamamlama · S6.3 planlayıcıyı ana aktör dışında çalıştırma · S6.4 yolculuk kartı
-  ve adım listesi (`enum` + `switch`) · S6.5 `MKMapItem` ile Haritalar'da açma.
+### [x] Faz 6 — Yol tarifi (~4-5 saat)
+- **Yapılanlar (hepsi Claude):**
+  - `DolmusCore/Trip`: `journey_planner.dart` ve `walk_barriers.dart` portu.
+    `JourneyPlanner` aktarmasız (halka hatlar için bütün geçişler) ve tek
+    aktarmalı rotaları bulur, yürüme engelini (havalimanı) geçenleri eler, sıralar,
+    aynı hat kombinasyonundan tek seçenek bırakır, "önerilen" için baskınlık
+    güvencesi uygular. `planTrip` uygulamadaki akışı izler: yürüme bacaklarını
+    çöz (kuş uçuşu × 1,2), yeniden sırala. Kurulum ve planlama `@concurrent`
+    yardımcılarla ana aktör dışında. Ücretler planlama anında güncel veriden okunur.
+  - Altın dosya `trips.json`: Flutter'ın gerçek koduyla 38 uç çifti (17'sinde rota,
+    toplam 74 seçenek). Hat sırası, süre, aktarma, yürüme, ücret, puan ve her
+    bacağın biniş/iniş noktaları karşılaştırılır.
+  - Uygulama: "Nereden → Nereye" sayfası (`TripPlannerView`: yazarken
+    `.task(id:)` ile 200 ms beklemeli öneriler, takas, "Konumumu kullan", Ev/İş,
+    son aramalar); haritada yol tarifi modu (yürüme kesik gri, dolmuşlar renkli,
+    biniş ve uç işaretleri), seçenekler listesi ("Önerilen"), alt bant, adım adım
+    tarif, yürüme bacağını Apple Haritalar'da yaya yol tarifiyle açma
+    (`MKMapItem(location:address:)`). Girişler: Anasayfa, seçilen noktanın
+    panelindeki "Yol tarifi" (varış dolu gelir), etkinlik detayı, haritadaki
+    "Nereden → Nereye" çipi (düzenleme).
+- **Doğrulama:** 66 test yeşil; bilerek bozulan üç kural (yürüme katsayısı,
+  aktarma yürüme sınırı, yürüme engeli süzgeci) yakalandı. Gerçek hareketlerle
+  (geçici XCUITest): Anasayfa → Bornova Metro → Şirinyer, seçenekler, ikinci
+  seçenek, adım adım; haritada nokta → Yol tarifi → Konumumu kullan → rotalar;
+  Konak → Havalimanı (rota yok, engel notu, başlangıç çevresindeki hatlar).
+  Debug'da planlayıcının kurulumu ~64 ms (846 çizgi), bir planlama ~230 ms; ikisi
+  de ana aktör dışında.
+- **Bulgular:**
+  - Bazı hatların iki varyantı aynı yoldan geçiyor (ör. M19#manavkuyu'nun gündüz
+    ve akşam RİNG'leri): seçenekler her ölçüde eşit ve Dart'ın kararsız sıralaması
+    hangisini öne koyacağını rastgele seçiyor. Altın test bu durumda varyant
+    numarasını karşılaştırmıyor.
+  - Nokta seçilince yakın hatlar listesi kendiliğinden açılınca alttaki "Yol
+    tarifi" düğmesini örtüyordu; Flutter'daki gibi liste düğmeyle açılıyor.
+  - List satırındaki `Label` rozeti bozuyordu (simge ayrı sütuna konuyor);
+    rozet `HStack` ile kuruldu.
+  - "Haritalar'da aç" düğmesi (Apple Haritalar'a geçiş) elle denenecek.
 - **Konu anlatımı (en sonda):** CPU işi için aktör mü `Sendable` değer tipi mi, `Task` iptali
   ve debounce, ViewModel'in gerçekten gerektiği yer, `@FocusState`.
 - **Bitti sayılır:** aynı uçlar için iOS ve Android aynı rotaları aynı sırada

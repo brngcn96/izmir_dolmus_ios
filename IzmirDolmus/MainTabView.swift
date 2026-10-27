@@ -28,5 +28,9 @@ struct MainTabView: View {
         // Search tab seçilince arama açılır; kapatılınca önceki tab'a dönülür.
         .tabViewSearchActivation(.searchTabSelection)
         .tabBarMinimizeBehavior(.onScrollDown)
+        // "Nereden → Nereye" her sekmeden açılabilir; sonuç Harita'da gösterilir.
+        .sheet(item: $router.tripDraft) { draft in
+            TripPlannerView(draft: draft)
+        }
     }
 }

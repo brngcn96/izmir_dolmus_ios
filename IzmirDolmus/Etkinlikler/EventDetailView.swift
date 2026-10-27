@@ -48,12 +48,23 @@ struct EventDetailView: View {
                         .foregroundStyle(.secondary)
                 }
                 if let coordinate = event.coordinate {
+                    let venue = PlacePoint(label: event.venue ?? event.title, coordinate: coordinate)
                     Button {
-                        router.showOnMap(.place(PlacePoint(label: event.venue ?? event.title, coordinate: coordinate)))
+                        router.planTrip(to: venue)
                     } label: {
-                        Label("Haritada göster", systemImage: "map")
+                        Label("Yol tarifi", systemImage: "arrow.triangle.turn.up.right.diamond.fill")
+                            .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.primary)
+                    Button {
+                        router.showOnMap(.place(venue))
+                    } label: {
+                        Label("Haritada göster", systemImage: "map")
+                            .font(.figtree(.headline, weight: .semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                    }
+                    .glassEffect(.regular.interactive(), in: .capsule)
                 } else {
                     Text("Bu etkinlik için konum bilgisi bulunmuyor.")
                         .font(.figtree(.footnote))

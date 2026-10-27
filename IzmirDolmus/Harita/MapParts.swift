@@ -202,6 +202,7 @@ struct RouteBanner: View {
 struct ProbePanel: View {
     let model: MapModel
     let onShowNearest: (String) -> Void
+    let onDirections: (PlacePoint) -> Void
 
     var body: some View {
         if model.nearby.isEmpty {
@@ -231,19 +232,34 @@ struct ProbePanel: View {
             .glassEffect(.regular, in: .rect(cornerRadius: Theme.Radius.sheet))
             .padding(.horizontal, 12)
         } else {
-            Button {
-                model.isShowingNearbyList = true
-            } label: {
-                Label(
-                    model.previewIDs.isEmpty ? "Hat listesi (\(model.nearby.count))" : "Hat listesi · \(model.previewIDs.count) çizili",
-                    systemImage: "bus"
-                )
-                .font(.figtree(.headline, weight: .semibold))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 22)
-                .frame(height: 50)
+            GlassEffectContainer(spacing: 10) {
+                HStack(spacing: 10) {
+                    Button {
+                        model.isShowingNearbyList = true
+                    } label: {
+                        Label(
+                            model.previewIDs.isEmpty ? "Hat listesi (\(model.nearby.count))" : "Hat listesi · \(model.previewIDs.count) çizili",
+                            systemImage: "bus"
+                        )
+                        .font(.figtree(.headline, weight: .semibold))
+                        .padding(.horizontal, 18)
+                        .frame(height: 50)
+                    }
+                    .glassEffect(.regular.interactive(), in: .capsule)
+                    if let probe = model.probe {
+                        Button {
+                            onDirections(probe)
+                        } label: {
+                            Label("Yol tarifi", systemImage: "arrow.triangle.turn.up.right.diamond.fill")
+                                .font(.figtree(.headline, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 18)
+                                .frame(height: 50)
+                        }
+                        .glassEffect(.regular.tint(.accent).interactive(), in: .capsule)
+                    }
+                }
             }
-            .glassEffect(.regular.tint(.accent).interactive(), in: .capsule)
         }
     }
 }
@@ -359,5 +375,29 @@ struct NearbyListSheet: View {
                 }
             }
         }
+    }
+}
+
+/// Haritanın üstünde kısa bir bilgi (ör. rota bulunamadı); dokununca kapanır.
+struct MessageCard: View {
+    let text: String
+    let onClose: () -> Void
+
+    var body: some View {
+        Button(action: onClose) {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "info.circle.fill")
+                    .foregroundStyle(.accent)
+                Text(text)
+                    .font(.figtree(.subheadline))
+                    .foregroundStyle(Color.primary)
+                    .multilineTextAlignment(.leading)
+                Spacer(minLength: 0)
+            }
+            .padding(14)
+        }
+        .buttonStyle(.plain)
+        .glassEffect(.regular, in: .rect(cornerRadius: Theme.Radius.card))
+        .padding(.horizontal, 12)
     }
 }

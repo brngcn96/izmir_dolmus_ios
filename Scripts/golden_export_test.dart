@@ -12,8 +12,10 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:izmir_dolmus/hat_overrides.dart';
+import 'package:izmir_dolmus/journey_planner.dart';
 import 'package:izmir_dolmus/models.dart';
 import 'package:izmir_dolmus/repository.dart';
+import 'package:izmir_dolmus/routing_service.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -99,6 +101,20 @@ const categoryTypes = [
   ['hastane'], ['universite'], ['avm'], ['metro', 'izban', 'tramvay'],
   ['otogar'], ['iskele'], ['okul'], ['park'], ['muze', 'turistik'],
   ['stadyum', 'spor'], ['pazar'], ['eczane'],
+];
+
+// Yol tarifi: Flutter kodundaki yorumlarda geçen zor durumlar (isimle bulunur).
+const tripPairs = [
+  ['Hasanağa Bahçesi', "Looffy's"],
+  ['FP Arena', 'İzotaş'],
+  ['Bornova Metro', 'Fatma Saygın'],
+  ['Kamil Tunca', 'Buca Otogar'],
+  ['Konak', 'Adnan Menderes Havalimanı'],
+  ['Adnan Menderes Havalimanı', 'Konak'],
+  ['Şirinyer', 'Işıkkent'],
+  ['Evka 3', 'Ege Üniversitesi'],
+  ['Karşıyaka İskele', 'Bornova Metro'],
+  ['Gaziemir', 'Buca'],
 ];
 
 // Harita: görünür alan sorgusu için zoom seviyeleri. Kutu boyu zoom'la küçülür.
@@ -302,5 +318,60 @@ void main() {
             ],
           },
     ]);
+
+    // --- Yol tarifi (Faz 6) ------------------------------------------------
+    // Uygulamadaki akışın aynısı: planla, yürüme bacaklarının uzunluğunu çöz
+    // (kuş uçuşu × walkDetourFactor), yeniden sırala, baskınlık güvencesi.
+    LatLng? placeOf(String q) {
+      final m = repo.placeMatches(q, limit: 1, near: centers['merkez']);
+      return m.isEmpty ? null : m.first.latLng;
+    }
+    final tripRuns = <(String, LatLng, LatLng)>[
+      for (final pair in tripPairs)
+        if (placeOf(pair[0]) != null && placeOf(pair[1]) != null)
+          ('${pair[0]} → ${pair[1]}', placeOf(pair[0])!, placeOf(pair[1])!),
+      for (var i = 0; i < 30; i++)
+        ('lm$i', repo.landmarks[(i * 193) % repo.landmarks.length].latLng,
+            repo.landmarks[(i * 389 + 77) % repo.landmarks.length].latLng),
+    ];
+    final tripEntries = <Object?>[];
+    for (final (name, a, b) in tripRuns) {
+      final js = repo.planJourneys(a, b);
+      for (final j in js) {
+        for (final leg in j.walks) {
+          final r = await RoutingService.footRoute(leg.from, leg.to);
+          if (r != null) leg.pathMeters = r.$2;
+        }
+      }
+      JourneyPlanner.rank(js);
+      JourneyPlanner.applyDominance(js);
+      tripEntries.add({
+        'name': name,
+        'from': ll(a),
+        'to': ll(b),
+        'journeys': [
+          for (final j in js)
+            {
+              'key': j.rides.map((r) => r.hatId).join('>'),
+              'estMinutes': j.estMinutes,
+              'transfers': j.transfers,
+              'walkMeters': j.walkMeters,
+              'rideMeters': j.rideMeters,
+              'feeMin': j.feeMin,
+              'feeMax': j.feeMax,
+              'score': j.sortScore,
+              'legs': [
+                for (final leg in j.legs)
+                  if (leg is WalkLeg)
+                    ['walk', ...ll(leg.from), ...ll(leg.to), leg.straightMeters, leg.toLabel]
+                  else if (leg is RideLeg)
+                    ['ride', leg.hatId, leg.geomIndex, ...ll(leg.board), ...ll(leg.alight),
+                      leg.meters, leg.ridePts.length]
+              ],
+            }
+        ],
+      });
+    }
+    writeLines('trips.json', tripEntries);
   });
 }

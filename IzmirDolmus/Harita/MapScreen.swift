@@ -57,6 +57,30 @@ struct MapScreen: View {
             .presentationDetents([.height(240), .fraction(0.45)])
             .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.45)))
         }
+        .sheet(isPresented: $model.isShowingJourneyList) {
+            JourneyListSheet(model: model)
+                .presentationDetents([.fraction(0.45), .large])
+                .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.45)))
+        }
+        .sheet(isPresented: $model.isShowingSteps) {
+            if let journey = model.selectedJourney {
+                JourneyStepsSheet(journey: journey)
+                    .presentationDetents([.medium, .large])
+            }
+        }
+        .overlay(alignment: .top) {
+            if let message = model.message {
+                MessageCard(text: message) { model.message = nil }
+                    .padding(.top, 120)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        // Mesaj birkaç saniye sonra kendiliğinden kalkar.
+        .task(id: model.message) {
+            guard model.message != nil else { return }
+            try? await Task.sleep(for: .seconds(7))
+            withAnimation { model.message = nil }
+        }
         .sheet(isPresented: $isShowingCategories) {
             CategorySheet(center: mapCenter) { place in
                 model.setProbe(place.coordinate, label: place.label, data: store.data)
@@ -82,6 +106,8 @@ struct MapScreen: View {
                 model.showHat(id, data: store.data)
             case .place(let place):
                 model.setProbe(place.coordinate, label: place.label, data: store.data)
+            case .trip(let from, let to):
+                Task { await model.startTrip(from: from, to: to, data: store.data) }
             }
         }
     }
@@ -114,6 +140,45 @@ struct MapScreen: View {
                     }
             }
             .annotationTitles(.hidden)
+        }
+        if let journey = model.selectedJourney {
+            ForEach(journey.numberedLegs, id: \.offset) { item in
+                switch item.leg {
+                case .walk(let walk):
+                    MapPolyline(coordinates: [walk.from.clCoordinate, walk.to.clCoordinate])
+                        .stroke(Color.gray.opacity(0.9), style: StrokeStyle(lineWidth: 4, lineCap: .round, dash: [6, 8]))
+                case .ride(let ride):
+                    MapPolyline(coordinates: ride.ridePoints.map(\.clCoordinate))
+                        .stroke(MapModel.rideColor(item.ride).opacity(0.9), style: StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round))
+                }
+            }
+            ForEach(Array(journey.rides.enumerated()), id: \.offset) { number, ride in
+                Annotation(ride.hatName, coordinate: ride.board.clCoordinate) {
+                    Image(systemName: "bus.fill")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(width: 20, height: 20)
+                        .background(MapModel.rideColor(number), in: .circle)
+                        .overlay(Circle().stroke(.white, lineWidth: 2))
+                }
+                .annotationTitles(.hidden)
+            }
+        }
+        if let from = model.tripFrom {
+            Annotation(from.label, coordinate: from.coordinate.clCoordinate) {
+                Circle()
+                    .fill(Color.accent)
+                    .stroke(.white, lineWidth: 3)
+                    .frame(width: 16, height: 16)
+            }
+        }
+        if let to = model.tripTo {
+            Annotation(to.label, coordinate: to.coordinate.clCoordinate, anchor: .bottom) {
+                Image(systemName: "mappin.circle.fill")
+                    .font(.system(size: 30))
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(.white, Color.red)
+            }
         }
         if let board = model.boardPoint {
             Annotation("Biniş", coordinate: board.clCoordinate) {
@@ -154,7 +219,27 @@ struct MapScreen: View {
                         .glassEffect(.regular.interactive(), in: .circle)
                         .accessibilityLabel("Geri")
                     }
-                    if model.hat == nil {
+                    if let from = model.tripFrom, let to = model.tripTo {
+                        Button {
+                            router.planTrip(from: from, to: to)
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
+                                    .foregroundStyle(.accent)
+                                Text("\(from.label) → \(to.label)")
+                                    .font(.figtree(.subheadline, weight: .semibold))
+                                    .foregroundStyle(Color.primary)
+                                    .lineLimit(1)
+                                Spacer(minLength: 4)
+                                Image(systemName: "pencil")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.horizontal, 16)
+                            .frame(height: 48)
+                        }
+                        .glassEffect(.regular.interactive(), in: .capsule)
+                        .accessibilityHint("Noktaları değiştir")
+                    } else if model.hat == nil {
                         Button {
                             isSearching = true
                         } label: {
@@ -189,7 +274,7 @@ struct MapScreen: View {
                     .glassEffect(.regular.interactive(), in: .circle)
                     .accessibilityLabel("Konumum")
                 }
-                if model.hat == nil {
+                if model.hat == nil && !model.isTripActive {
                     ScrollView(.horizontal) {
                         HStack(spacing: 8) {
                             if let home = user.home {
@@ -234,7 +319,9 @@ struct MapScreen: View {
                     model.showHat(hatID, data: store.data)
                 }
             }
-            if let hat = model.hat {
+            if model.isTripActive {
+                JourneyBanner(model: model)
+            } else if let hat = model.hat {
                 RouteBanner(model: model, hat: hat) {
                     router[.map].append(.hat(id: hat.id))
                 } onClose: {
@@ -244,6 +331,8 @@ struct MapScreen: View {
             } else if model.probe != nil {
                 ProbePanel(model: model) { hatID in
                     model.showHat(hatID, data: store.data)
+                } onDirections: { place in
+                    router.planTrip(to: place)
                 }
             }
         }

@@ -17,6 +17,22 @@ struct HomeView: View {
                 WeatherRow(weather: weather)
             }
             Section("Keşfet") {
+                Button {
+                    router.planTrip()
+                } label: {
+                    Label {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Yol tarifi")
+                                .font(.figtree(.headline, weight: .bold))
+                                .foregroundStyle(Color.primary)
+                            Text("Nereden nereye? Dolmuşla nasıl gidilir")
+                                .font(.figtree(.subheadline))
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        Image(systemName: "arrow.triangle.turn.up.right.diamond")
+                    }
+                }
                 NavigationLink(value: Route.events) {
                     Label {
                         VStack(alignment: .leading, spacing: 2) {

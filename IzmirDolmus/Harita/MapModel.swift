@@ -69,13 +69,39 @@ final class MapModel {
     /// Önizleme çizgisine dokununca altında kalan hatlar.
     private(set) var tappedHats: [DolmusHat] = []
 
+    // MARK: Yol tarifi
+
+    private(set) var tripFrom: PlacePoint?
+    private(set) var tripTo: PlacePoint?
+    /// Seçenekler, iyiden kötüye; ilki "önerilen".
+    private(set) var journeys: [Journey] = []
+    private(set) var journeyIndex = 0
+    private(set) var isPlanning = false
+    var isShowingJourneyList = false
+    var isShowingSteps = false
+    /// Kısa süre gösterilen bilgi (ör. rota bulunamadı).
+    var message: String?
+    /// Planlayıcı bir kez kurulur (ilk yol tarifinde); aynı anda gelen istekler
+    /// aynı kurulumu bekler.
+    private var plannerTask: Task<JourneyPlanner, Never>?
+    /// Dolmuş bacaklarının renkleri, sırayla.
+    static let rideColors: [Color] = [Color(hex: 0x1565C0), Color(hex: 0xE65100), Color(hex: 0x6A1B9A)]
+
+    var selectedJourney: Journey? {
+        journeys.indices.contains(journeyIndex) ? journeys[journeyIndex] : nil
+    }
+
+    var isTripActive: Bool {
+        tripFrom != nil
+    }
+
     var selectedGeom: HatGeom? {
         geoms.indices.contains(geomIndex) ? geoms[geomIndex] : nil
     }
 
-    /// Haritada bir şey gösteriliyor mu (hat ya da seçilen nokta).
+    /// Haritada bir şey gösteriliyor mu (hat, seçilen nokta ya da yol tarifi).
     var hasOverlay: Bool {
-        hat != nil || probe != nil
+        hat != nil || probe != nil || tripFrom != nil
     }
 
     func previewColor(for hatID: String) -> Color {
@@ -87,6 +113,7 @@ final class MapModel {
 
     /// Noktayı işaretler, yakınından geçen hatları bulur ve noktayı ortalar.
     func setProbe(_ coordinate: Coordinate, label: String, data: DolmusData) {
+        clearTrip()
         let list = data.nearbyHats(to: coordinate, maxMeters: Self.nearRadius)
         nearest = list.isEmpty ? data.nearbyHats(to: coordinate, maxMeters: Self.farRadius, limit: 1).first : nil
         hat = nil
@@ -98,7 +125,8 @@ final class MapModel {
         nearby = list
         previewIDs = []
         tappedHats = []
-        isShowingNearbyList = !list.isEmpty
+        // Liste kendiliğinden açılmaz: altta "Hat listesi" ve "Yol tarifi" görünsün.
+        isShowingNearbyList = false
         move(to: coordinate, zoom: max(zoom, 13))
     }
 
@@ -136,6 +164,7 @@ final class MapModel {
     /// güzergah (gidiş/dönüş/varyant) önce gösterilir.
     func showHat(_ hatID: String, data: DolmusData) {
         guard let hat = data.hat(id: hatID) else { return }
+        clearTrip()
         self.hat = hat
         geoms = data.geoms(for: hatID)
         geomIndex = probe.map { data.nearestGeomIndex(of: hatID, to: $0.coordinate) } ?? 0
@@ -185,6 +214,10 @@ final class MapModel {
     /// Bir adım geri: hat → (nokta varsa) yakın hatlar → boş harita.
     /// - Returns: Harita boşaldıysa `true`; çağıran geldiği sekmeye dönebilir.
     func back(data: DolmusData) -> Bool {
+        if tripFrom != nil {
+            clear()
+            return true
+        }
         if hat != nil {
             if let probe {
                 setProbe(probe.coordinate, label: probe.label, data: data)
@@ -201,12 +234,91 @@ final class MapModel {
     }
 
     func clear() {
+        clearTrip()
         hat = nil
         geoms = []
         geomIndex = 0
         boardPoint = nil
         boardMeters = nil
         clearProbe()
+    }
+
+    // MARK: Yol tarifi
+
+    /// Nereden → Nereye: planlayıcıyı ana aktör dışında çalıştırır, sonucu gösterir.
+    func startTrip(from: PlacePoint, to: PlacePoint, data: DolmusData) async {
+        hat = nil
+        geoms = []
+        geomIndex = 0
+        boardPoint = nil
+        boardMeters = nil
+        clearProbe()
+        tripFrom = from
+        tripTo = to
+        journeys = []
+        journeyIndex = 0
+        isPlanning = true
+        message = nil
+        fit([from.coordinate, to.coordinate])
+
+        let planner = await journeyPlanner(data: data)
+        let found = await planner.planTrip(from: from.coordinate, to: to.coordinate, data: data)
+        // Bu arada başka bir yol tarifi ya da görünüm seçildiyse sonucu bırak.
+        guard tripFrom == from, tripTo == to else { return }
+        isPlanning = false
+        guard !found.isEmpty else {
+            // Uçlardan biri yayaya kapalı bir alandaysa (havalimanı) onun notu;
+            // başlangıç öyle değilse çevresindeki hatlar gösterilir.
+            let note = WalkBarriers.note(for: to.coordinate) ?? WalkBarriers.note(for: from.coordinate)
+            clearTrip()
+            if WalkBarriers.note(for: from.coordinate) == nil {
+                setProbe(from.coordinate, label: from.label, data: data)
+            }
+            message = note ?? "“\(from.label)” → “\(to.label)” için dolmuşla ulaşım bulunamadı (çok uzak ya da yürüme mesafesi fazla). Başlangıç çevresindeki hatlar gösteriliyor."
+            return
+        }
+        journeys = found
+        journeyIndex = 0
+        isShowingJourneyList = true
+        fitSelectedJourney()
+    }
+
+    func selectJourney(_ index: Int) {
+        guard journeys.indices.contains(index) else { return }
+        journeyIndex = index
+        isShowingJourneyList = false
+        fitSelectedJourney()
+    }
+
+    func clearTrip() {
+        tripFrom = nil
+        tripTo = nil
+        journeys = []
+        journeyIndex = 0
+        isPlanning = false
+        isShowingJourneyList = false
+        isShowingSteps = false
+    }
+
+    private func journeyPlanner(data: DolmusData) async -> JourneyPlanner {
+        if let plannerTask {
+            return await plannerTask.value
+        }
+        let task = Task { await JourneyPlanner.build(from: data) }
+        plannerTask = task
+        return await task.value
+    }
+
+    private func fitSelectedJourney() {
+        guard let journey = selectedJourney else { return }
+        var points: [Coordinate] = []
+        for leg in journey.legs {
+            switch leg {
+            case .walk(let walk): points += [walk.from, walk.to]
+            case .ride(let ride): points += ride.ridePoints
+            }
+        }
+        fit(points)
     }
 
     // MARK: Kamera ve noktalar

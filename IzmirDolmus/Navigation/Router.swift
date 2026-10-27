@@ -1,10 +1,19 @@
 import DolmusCore
+import Foundation
 import Observation
 
-/// Haritada gösterilecek şey: başka sekmelerden "Haritada göster".
+/// Haritada gösterilecek şey: başka sekmelerden "Haritada göster" ya da yol tarifi.
 enum MapRequest: Equatable {
     case hat(id: String)
     case place(PlacePoint)
+    case trip(from: PlacePoint, to: PlacePoint)
+}
+
+/// "Nereden → Nereye" sayfasının başlangıç değerleri.
+struct TripDraft: Identifiable {
+    let id = UUID()
+    var from: PlacePoint?
+    var to: PlacePoint?
 }
 
 /// Uygulamanın gezinme durumu: hangi sekme seçili ve her sekmenin yığınında
@@ -19,6 +28,8 @@ final class Router {
     var mapRequest: MapRequest?
     /// Harita başka bir sekmeden açıldıysa, harita boşaltılınca dönülecek sekme.
     var mapReturnTab: AppTab?
+    /// Açık "Nereden → Nereye" sayfası; `nil` ise kapalı.
+    var tripDraft: TripDraft?
 
     /// Bir sekmenin gezinme yolu; boş dizi sekmenin kök ekranıdır.
     subscript(tab: AppTab) -> [Route] {
@@ -30,6 +41,11 @@ final class Router {
     func show(_ route: Route, in tab: AppTab) {
         selectedTab = tab
         self[tab] = [route]
+    }
+
+    /// "Nereden → Nereye" sayfasını açar; verilen uçlar dolu gelir.
+    func planTrip(from: PlacePoint? = nil, to: PlacePoint? = nil) {
+        tripDraft = TripDraft(from: from, to: to)
     }
 
     /// Harita sekmesine geçip `request`'i gösterir; haritanın yığınını köke indirir.
