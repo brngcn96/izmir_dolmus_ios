@@ -27,7 +27,7 @@ struct HatActionBar: View {
                 .accessibilityLabel(isFavorite ? "Favorilerden çıkar" : "Favorilere ekle")
 
                 Button {
-                    router.selectedTab = .map
+                    router.showOnMap(.hat(id: hat.id))
                 } label: {
                     Label("Haritada göster", systemImage: "map")
                         .font(.figtree(.headline, weight: .semibold))

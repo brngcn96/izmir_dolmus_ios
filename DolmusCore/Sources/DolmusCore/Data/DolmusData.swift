@@ -28,6 +28,9 @@ public struct DolmusData: Sendable {
     private let geomsByHat: [String: [HatGeom]]
     /// Hat kimliği → `hats` içindeki sırası.
     private let hatIndex: [String: Int]
+    /// Haritada çizilebilecek noktalar ve ~400 m'lik ızgara dizini (hücre → sıra).
+    let pois: [MapPoi]
+    let poiGrid: [Int: [Int]]
 
     // Arama için önceden hesaplananlar; ilgili diziyle aynı sırada.
     let hatNameNorms: [String]
@@ -122,8 +125,10 @@ public struct DolmusData: Sendable {
         self.duraklar = duraklar
         self.landmarks = landmarks
         durakNorms = duraklar.map { trNorm($0.label) }
-        durakIsStop = duraklar.map { PlaceClassifier.kind(of: $0.label) == "durak" }
+        let durakKinds = duraklar.map { PlaceClassifier.kind(of: $0.label) }
+        durakIsStop = durakKinds.map { $0 == "durak" }
         landmarkNorms = landmarks.map { trNorm($0.name) }
+        (pois, poiGrid) = Self.buildPois(landmarks: landmarks, duraklar: duraklar, durakKinds: durakKinds)
     }
 
     /// Hiç hattı ve yeri olmayan veri: yükleme bitene kadar arayüzün

@@ -47,10 +47,9 @@ struct EventDetailView: View {
                         .font(.figtree(.subheadline))
                         .foregroundStyle(.secondary)
                 }
-                if event.coordinate != nil {
-                    // Faz 5'te mekanı haritada işaretleyecek; şimdilik sekmeyi açar.
+                if let coordinate = event.coordinate {
                     Button {
-                        router.selectedTab = .map
+                        router.showOnMap(.place(PlacePoint(label: event.venue ?? event.title, coordinate: coordinate)))
                     } label: {
                         Label("Haritada göster", systemImage: "map")
                     }

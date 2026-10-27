@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-10-15): Faz 0–4 bitti · sırada Faz 5
+Plan tarihi: 2026-10-08 · Durum (2026-10-27): Faz 0–5 bitti · sırada Faz 6 · çalışma düzeni değişti (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -24,7 +24,7 @@ repo'da durur (`izmir_dolmus`); bu repo ona bağımlı olmadan klonlanıp derlen
 | Kalıcılık | UserDefaults (favori, son aramalar, Ev/İş, bayraklar) + dosya önbelleği (ücret, etkinlik) | SwiftData'ya değecek hacimde veri yok. |
 | Ağ | `URLSession` async/await, 3. parti kütüphane yok | |
 | Reklam ve analitik | En sonda ayrı, atlanabilir faz (Faz 9) | |
-| Öğrenme düzeni | Dengeli: faz başına 4-6 kilit parçayı sen yazarsın | |
+| Çalışma düzeni | Faz 0–4: dengeli, faz başına 4-6 kilit parçayı sen yazdın. **2026-10-27'den itibaren:** kodu Claude yazar, faz sonunda kısa özet ve açıklamalı commit; konu anlatımları en sonda toplu | Kullanıcının zamanı daraldı. |
 
 Varsayımlar (itirazın varsa değiştiririz): yalnızca iPhone, yalnızca Türkçe,
 açık + koyu mod.
@@ -64,19 +64,19 @@ izmir_dolmus_ios/
 
 ## Çalışma düzeni (her faz)
 
-1. **Açılış:** fazın hedefi, "bitti" tanımı ve senin yazacağın parçaların listesi.
-2. **İskelet:** portları ve tekrarlayan kodu ben yazar, derler, testleri
-   çalıştırırım. Senin yazacağın yerlere `// ✍️ SEN (S2.1): …` işareti bırakırım.
-   İşaretli yer derlenen bir yer tutucudur; uygulama her an çalışır durumda kalır.
-3. **Sen yaz:** kodu sohbette veririm (dosya, işaret, kısa "neden böyle").
-   Yapıştırmadan yazar, çalıştırır, "yazdım" dersin.
-4. **Geri bildirim:** dosyanı okur, derler ve test ederim; farkları ve varsa
-   daha iyi yazımı söylerim.
-5. **Konu anlatımı (faz sonu):** kavramlar UIKit karşılıklarıyla, bu fazda
-   yazdığın kodun gerekçeleri, sık yapılan hatalar, 3-5 kontrol sorusu. Ardından commit.
+Faz 0–4 öğrenme odaklı yürüdü: iskeleti ben yazdım, faz başına 4-6 kilit parçayı
+sen yazdın, faz sonunda konu anlatımı yapıldı. **2026-10-27'den itibaren (Faz 5 ve
+sonrası):**
 
-Süreler senin tarafındaki kaba tahmindir (toplam 40-50 saat civarı); Faz 1'den
-sonra gerçek hıza göre güncellenir.
+1. **Kod:** fazı uçtan uca ben yazarım (port, ekranlar, testler); yer tutucu yok.
+2. **Doğrulama:** derleme, testler ve ayrı bir simülatörde ekran görüntüleri;
+   dokunma gerektiren akışlar ayrıca belirtilir.
+3. **Faz sonu:** kısa özet (ne yapıldı, nasıl doğrulandı, önemli bulgular), bu
+   dosyanın güncellenmesi ve açıklamalı İngilizce commit (kalıcı onayınla).
+4. **Konu anlatımı:** en sonda, bütün fazların "Konu anlatımı" maddeleri koddan
+   alıntılarla toplu anlatılır.
+
+Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından kısalır.
 
 ## Fazlar
 
@@ -337,19 +337,48 @@ sonra gerçek hıza göre güncellenir.
 - **Bitti sayılır:** uçak modunda önbellekle çalışır; tazeleme iptal edilebilir;
   ağ testleri gerçek sunucuya gitmeden yeşil.
 
-### [ ] Faz 5 — Harita I: MapKit (~5-6 saat)
-- **İlk iş (risk kontrolü):** Bergama, Tire, Çeşme gibi dış ilçelerde Apple
-  Haritalar altlığının yeterliliğine birlikte bakmak.
-- **Çıktı:** hat güzergahı çizimi (gidiş/dönüş/varyant), kameranın İzmir'e
-  sınırlanması, konumum, uzun basınca "Seçilen nokta" + yakın hatlar (renkli
-  çizgiler ve açıklama), çizgiye dokununca hat tanıma, yakınlaştıkça durak/POI
-  işaretleri, alt panel; diğer sekmelerden "Haritada göster".
-- **Sen:** S5.1 `Map(position:)` + `MapPolyline` + kamerayı sığdırma · S5.2
-  `MapReader` ile uzun basma → koordinat → yakın hatlar · S5.3
-  `CLLocationUpdate.liveUpdates()` + izin akışı · S5.4 `onMapCameraChange` +
-  debounce ile görünür alandaki POI'ler · S5.5 Router üzerinden "Haritada göster"
-  · S5.6 detent'li alt panel.
-- **Konu anlatımı:** MapKit for SwiftUI (içerik oluşturucu, `MapCameraPosition`,
+### [x] Faz 5 — Harita I: MapKit (~5-6 saat)
+- **Altlık kararı (2026-10-16/27):** Bergama, Tire, Çeşme, Ödemiş, Karaburun ve
+  Mordoğan'da Apple Haritalar ile OSM yan yana karşılaştırıldı. Apple'da sokak ağı
+  ve adları altı noktada da var, otogarlar işaretli; bina şekilleri ve bazı ana
+  yolların vurgusu OSM'den zayıf. Dolmuş bilgisi (çizgiler, duraklar, noktalar)
+  kendi verimizden çizildiği için **MapKit'le devam** edildi.
+- **Yapılanlar (hepsi Claude):**
+  - `DolmusCore/Map`: Vincenty uzaklığı (`latlong2` ile aynı, tam metreye
+    yuvarlanmış), çizgiye düzlem uzaklığı, `HatGeom.nearestBoardable` (otoyol
+    parçaları atlanır), `nearbyHats` (800 m, 25), `nearestGeomIndex`, POI dizini
+    (~400 m ızgara, tür başına en düşük zoom ve öncelik) ve `poisInView`,
+    `placesInCategory`, çizgiye dokunma için `hats(onLinesOf:near:toleranceMeters:)`.
+  - Altın dosyalar: `nearby_hats.json` (107 sorgu), `pois_in_view.json` (20),
+    `places_in_category.json` (24); `MapGoldenTests` Dart'ın kararsız sıralamasını
+    hesaba katarak (eşit anahtarlı gruplar küme olarak) karşılaştırır.
+  - Uygulama (`Harita/`): `MapModel` (seçilen nokta, yakın hatlar, renkli
+    önizleme çizgileri, tek hat ve güzergah çipleri, bir adım geri, kamera ve
+    noktalar), `MapScreen` (`Map(position:bounds:)`, `MapReader` + uzun basma için
+    `UIGestureRecognizerRepresentable`, dokunmayla çizgi tanıma, kamera durunca
+    noktaların yenilenmesi), `LocationProvider` (`CLServiceSession` +
+    `CLLocationUpdate.liveUpdates()`, 12 sn sınır), yakın hatlar sheet'i
+    (arkadaki harita kullanılabilir), "Önemli Noktalar" kategorileri, haritada arama.
+  - `Router.showOnMap`: hat detail'i ve etkinlik detayındaki "Haritada göster"
+    haritayı ilgili hat ya da yerle açar; harita boşaltılınca gelinen sekmeye dönülür.
+- **Doğrulama:** 64 test yeşil; bilerek bozulan üç kural (durak önceliği,
+  binilebilir parçanın iki ucu, kategori tekrar anahtarı) yakalandı. Gerçek
+  hareketlerle (geçici XCUITest projesi: uzun basma, dokunma, kıstırma) ayrı
+  simülatörde: boş harita, uzun basma → yakın hatlar, önizleme çizgileri, tek hat
+  ve güzergah çipleri, geri adımları, konumum (simüle konum), kategoriler,
+  arama, yakınlaşınca noktalar, hat detail'inden "Haritada göster" ve geri dönüş;
+  açık ve koyu mod. Çizgiye dokunmanın hesabı birim testli; dokunmanın kendisi
+  elle denenecek.
+- **Bulgular:**
+  - Güzergah çiplerinde `ForEach(geoms.indices)` + `geoms[index]` "geri"de
+    çöktürüyordu: dizi boşalırken bant bir kez daha çiziliyor. Çipler elemanın
+    kendisi üzerinden kuruldu.
+  - Koyu haritada beyaz etiket dış hattı okunmuyordu; dış hat renk şemasına
+    göre (koyuda siyah).
+  - Flutter haritada aynı anda en çok 30 nokta çiziyor (`poisInView`'in 160'lık
+    varsayılanı değil); aynısı yapıldı.
+  - Yol tarifi düğmeleri (nokta panelinde, etkinlik detayında) Faz 6'da.
+- **Konu anlatımı (en sonda):** MapKit for SwiftUI (içerik oluşturucu, `MapCameraPosition`,
   `MapReader`, performans), CoreLocation'ın async API'leri, jestler;
   `UIViewRepresentable` ile `MKMapView`'a ne zaman inilir.
 - **Bitti sayılır:** Flutter'daki harita senaryoları çalışır; kaydırma akıcı.
@@ -360,10 +389,10 @@ sonra gerçek hıza göre güncellenir.
   yürüme (kesik) ve dolmuş (renkli) bacakları, yürüme bacağını Apple Haritalar'da açma.
 - **Ben:** `journey_planner.dart` + `walk_barriers.dart` portu; örnek nokta
   çiftleri için Flutter çıktılarıyla altın dosya testleri.
-- **Sen:** S6.1 `TripPlannerModel` · S6.2 `.task(id:)` ile debounce'lu otomatik
+- **Parçalar:** S6.1 `TripPlannerModel` · S6.2 `.task(id:)` ile debounce'lu otomatik
   tamamlama · S6.3 planlayıcıyı ana aktör dışında çalıştırma · S6.4 yolculuk kartı
   ve adım listesi (`enum` + `switch`) · S6.5 `MKMapItem` ile Haritalar'da açma.
-- **Konu anlatımı:** CPU işi için aktör mü `Sendable` değer tipi mi, `Task` iptali
+- **Konu anlatımı (en sonda):** CPU işi için aktör mü `Sendable` değer tipi mi, `Task` iptali
   ve debounce, ViewModel'in gerçekten gerektiği yer, `@FocusState`.
 - **Bitti sayılır:** aynı uçlar için iOS ve Android aynı rotaları aynı sırada
   verir (testle); planlama sırasında arayüz donmaz.
@@ -373,10 +402,10 @@ sonra gerçek hıza göre güncellenir.
   yakınındaki hatlar mini haritası, etkinlik girişi, son aramalar), ilk açılış
   tanıtımı (bağlam içinde konum izni), kayan dolmuş animasyonu; Icon Composer ile
   katmanlı (Liquid Glass) uygulama ikonu — şimdilik Android'deki düz ikon kullanılıyor.
-- **Sen:** S7.1 `KeyframeAnimator`/`PhaseAnimator` ile açılış animasyonu · S7.2
+- **Parçalar:** S7.1 `KeyframeAnimator`/`PhaseAnimator` ile açılış animasyonu · S7.2
   sayfalı onboarding · S7.3 anasayfa bileşimi (mini harita kartı, yatay çipler) ·
   S7.4 `matchedTransitionSource` + zoom geçişi · S7.5 `@AppStorage` bayrağı.
-- **Konu anlatımı:** animasyon sistemi (örtük/açık, geçişler, faz ve anahtar kare
+- **Konu anlatımı (en sonda):** animasyon sistemi (örtük/açık, geçişler, faz ve anahtar kare
   animasyonları), kaydırma API'leri, view bileşimi.
 - **Bitti sayılır:** reklam/analitik dışında Android ile özellik eşitliği.
 - **Erken yayın noktası:** buradan Faz 8 + Faz 10 ile reklamsız yayınlanabilir.
@@ -385,10 +414,10 @@ sonra gerçek hıza göre güncellenir.
 - **Çıktı:** VoiceOver ve Dynamic Type uyumu, gereksiz yeniden çizimlerin
   temizliği, kritik akış UI testi, değerlendirme isteği; isteğe bağlı olarak
   izmirdolmus.com hat sayfalarından uygulamaya Universal Link.
-- **Sen:** S8.1 erişilebilirlik etiketleri · S8.2 `Self._printChanges()` ile
+- **Parçalar:** S8.1 erişilebilirlik etiketleri · S8.2 `Self._printChanges()` ile
   yeniden çizim avı · S8.3 bir akış için XCUITest · S8.4 `onOpenURL` → Router ·
   S8.5 `requestReview` kuralları.
-- **Konu anlatımı:** SwiftUI performans modeli (bağımlılık takibi, kimlik,
+- **Konu anlatımı (en sonda):** SwiftUI performans modeli (bağımlılık takibi, kimlik,
   Instruments), erişilebilirlik, derin bağlantılar.
 - **Bitti sayılır:** harita ve listeler takılmasız; VoiceOver ile ana akışlar
   tamamlanabilir; testler yeşil.
@@ -400,9 +429,9 @@ sonra gerçek hıza göre güncellenir.
   geçiş reklamı (aynı kurallar: günde 1, ilk oturumda yok); ATT izin akışı, rıza
   penceresi, gizlilik manifesti.
 - **Karar noktası:** banner'ın yüzen cam tab bar ile çakışmayan yerleşimi.
-- **Sen:** S9.1 `Analytics` cephesi · S9.2 banner için `UIViewRepresentable`
+- **Parçalar:** S9.1 `Analytics` cephesi · S9.2 banner için `UIViewRepresentable`
   sarmalayıcı · S9.3 ATT akışı · S9.4 `scenePhase` ile App Open tetikleme.
-- **Konu anlatımı:** UIKit ↔ SwiftUI köprüleme, Swift 6 altında `Sendable`
+- **Konu anlatımı (en sonda):** UIKit ↔ SwiftUI köprüleme, Swift 6 altında `Sendable`
   olmayan 3. parti SDK'lar, ATT ve gizlilik kuralları.
 - **Bitti sayılır:** test reklamları doğru anlarda görünür; izin reddinde
   uygulama sorunsuz çalışır.
@@ -411,7 +440,7 @@ sonra gerçek hıza göre güncellenir.
 - **Çıktı:** imzalama, App Store Connect kaydı, gizlilik etiketleri, ekran
   görüntüleri, TestFlight, incelemeye gönderim; web sitesine App Store bağlantısı;
   Figtree (SIL OFL) lisans bildirimi.
-- **Konu anlatımı:** imzalama ve provisioning, App Review'da sık ret nedenleri
+- **Konu anlatımı (en sonda):** imzalama ve provisioning, App Review'da sık ret nedenleri
   (konum izni metni, ATT), sürümleme, aşamalı yayın, yayın sonrası izleme.
 - **Bitti sayılır:** uygulama App Store'da.
 

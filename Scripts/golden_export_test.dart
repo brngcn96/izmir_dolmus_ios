@@ -94,6 +94,16 @@ const queryTokenSamples = [
   'ilkokulu ortaokulu', 'meydani bulvar', 'cami sok', 'BLV cadd mh',
 ];
 
+// Harita: "Önemli Noktalar" kategorileri (map_screen.dart'taki _categories).
+const categoryTypes = [
+  ['hastane'], ['universite'], ['avm'], ['metro', 'izban', 'tramvay'],
+  ['otogar'], ['iskele'], ['okul'], ['park'], ['muze', 'turistik'],
+  ['stadyum', 'spor'], ['pazar'], ['eczane'],
+];
+
+// Harita: görünür alan sorgusu için zoom seviyeleri. Kutu boyu zoom'la küçülür.
+const poiZooms = [12.0, 13.5, 15.0, 16.5, 17.0];
+
 String kindLetter(String kind) => switch (kind) {
       'durak' => 'd',
       'mahalle' => 'm',
@@ -226,5 +236,71 @@ void main() {
     };
     File('$outDir/text.json').writeAsStringSync(
         '${const JsonEncoder.withIndent(' ').convert(text)}\n');
+
+    // --- Harita (Faz 5) ---------------------------------------------------
+    // Yakın hatlar: merkezler, her 120. önemli nokta ve İzmir üzerinde 6x6 ızgara.
+    final probes = <LatLng>[
+      ...centers.values,
+      for (var i = 0; i < repo.landmarks.length; i += 120) repo.landmarks[i].latLng,
+      for (var a = 0; a < 6; a++)
+        for (var b = 0; b < 6; b++)
+          LatLng(38.20 + a * 0.10, 26.90 + b * 0.10),
+    ];
+    writeLines('nearby_hats.json', [
+      for (var i = 0; i < probes.length; i++) ...[
+        {
+          'p': ll(probes[i]),
+          'max': 800,
+          'limit': 25,
+          'results': [
+            for (final n in repo.nearbyHats(probes[i])) [n.hat.id, n.meters]
+          ],
+        },
+        if (i % 5 == 0)
+          {
+            'p': ll(probes[i]),
+            'max': 2000,
+            'limit': 1,
+            'results': [
+              for (final n in repo.nearbyHats(probes[i], maxMeters: 2000, limit: 1))
+                [n.hat.id, n.meters]
+            ],
+          },
+      ],
+    ]);
+
+    // Görünür alandaki noktalar: her merkezde zoom'a göre küçülen kutular.
+    writeLines('pois_in_view.json', [
+      for (final c in centers.values)
+        for (final z in poiZooms)
+          () {
+            final half = 0.03 / (1 << (z - 12).floor()) * (z % 1 == 0 ? 1 : 0.7);
+            final south = c.latitude - half, north = c.latitude + half;
+            final west = c.longitude - half * 1.2, east = c.longitude + half * 1.2;
+            return {
+              'box': [south, north, west, east],
+              'zoom': z,
+              'results': [
+                for (final poi in repo.poisInView(south, north, west, east, z))
+                  [poi.label, poi.type, poi.latLng.latitude, poi.latLng.longitude]
+              ],
+            };
+          }(),
+    ]);
+
+    // Kategoriler: her tür grubu, iki merkeze göre (uzaklık sırası).
+    writeLines('places_in_category.json', [
+      for (final types in categoryTypes)
+        for (final center in ['merkez', 'tire'])
+          {
+            'types': types,
+            'near': ll(centers[center]!),
+            'results': [
+              for (final p in repo.placesInCategory(types, near: centers[center]))
+                [p.label, p.latLng.latitude, p.latLng.longitude,
+                  const Distance().as(LengthUnit.Meter, centers[center]!, p.latLng)]
+            ],
+          },
+    ]);
   });
 }

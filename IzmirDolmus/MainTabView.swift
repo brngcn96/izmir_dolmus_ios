@@ -12,7 +12,7 @@ struct MainTabView: View {
                 RouteStack(tab: .home) { HomeView() }
             }
             Tab("Harita", systemImage: "map", value: AppTab.map) {
-                RouteStack(tab: .map) { ComingSoonView(title: "Harita", systemImage: "map", phase: 5) }
+                RouteStack(tab: .map) { MapScreen() }
             }
             Tab("Favoriler", systemImage: "star", value: AppTab.favorites) {
                 RouteStack(tab: .favorites) { FavoritesView() }

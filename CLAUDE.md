@@ -7,23 +7,20 @@ repo ona bağımlı olmadan derlenir ve o repo'ya iOS dosyası eklenmez.
 Plan, kararlar ve faz ilerlemesi `PLAN.md`'dedir. iOS işine başlamadan önce oku;
 ilerlemeyi orada işaretle (faz kutuları ve en üstteki durum satırı).
 
-## Çalışma düzeni (öğrenme odaklı)
+## Çalışma düzeni (2026-10-27'den itibaren: hızlı)
 
 Kullanıcı orta seviye bir iOS geliştirici: Swift 5 ve programatik UIKit'te iyi,
-SwiftUI'da yeni. Bu projeyi SwiftUI'ı, Swift 6 eşzamanlılığını ve modern ağ
-katmanını öğrenerek yazmak istiyor; ne öğrenme aşamasını atlamak ne de öğrenirken
-çok vakit kaybetmek istiyor. Türkçe konuş.
+SwiftUI'da yeni. Faz 0–4'ü öğrenerek, parçaları kendisi yazarak geçti; zamanı
+daraldığı için Faz 5'ten itibaren düzen değişti. Türkçe konuş.
 
-- Bir fazı uçtan uca kendin yazma. İskeleti, veri/algoritma portlarını ve
-  tekrarlayan kodu sen yaz; `PLAN.md`'de "Sen" diye listelenen 4-6 kilit parçayı
-  kullanıcıya bırak.
-- Kullanıcının yazacağı yeri `// ✍️ SEN (S2.1): …` işaretli, derlenen bir yer
-  tutucuyla bırak; uygulama her an çalışır durumda kalsın.
-- Kodu sohbette ver: dosya, işaret, kısa "neden böyle". Vermeden önce birebir
-  aynısını geçici olarak yerine koyup derle ve simülatörde çalıştır, sonra geri al.
-- Kullanıcı "yazdım" deyince dosyasını oku, derle ve test et, geri bildirim ver.
-- Faz sonunda konu anlatımı: kavramlar UIKit/GCD karşılıklarıyla, sık yapılan
-  hatalar, 3-5 kontrol sorusu. Commit yalnızca kullanıcının onayıyla.
+- Fazları uçtan uca sen yaz; kullanıcıya parça ya da yer tutucu bırakma.
+- Her fazı derle, testleri koş, simülatörde doğrula; dokunma gerektiren akışları
+  açıkça belirt.
+- Faz sonunda kısa bir özet ver: ne yapıldı, nasıl doğrulandı, önemli bulgular.
+  `PLAN.md`'yi güncelle ve açıklamalı, İngilizce bir commit at (kullanıcının
+  2026-10-27 tarihli kalıcı onayı; mesajın sonuna `Co-Authored-By` satırı).
+- Konu anlatımları en sona kaldı: bütün fazlar bitince, `PLAN.md`'deki faz
+  konuları projedeki koddan alıntılarla, UIKit/GCD karşılıklarıyla toplu anlatılır.
 
 ## Yapı
 
