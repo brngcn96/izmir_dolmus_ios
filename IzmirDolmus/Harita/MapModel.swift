@@ -47,6 +47,8 @@ final class MapModel {
     var mapSize: CGSize = .zero
     /// Görünür alandaki noktalar, zoom'a göre süzülmüş.
     private(set) var pois: [MapPoi] = []
+    /// Adı yazılacak noktalar (adları birbirine çarpmayanlar).
+    private(set) var labeledIDs: Set<Int> = []
 
     // MARK: Tek hat
 
@@ -127,6 +129,7 @@ final class MapModel {
         tappedHats = []
         // Liste kendiliğinden açılmaz: altta "Hat listesi" ve "Yol tarifi" görünsün.
         isShowingNearbyList = false
+        refreshPois(data: data)
         move(to: coordinate, zoom: max(zoom, 13))
     }
 
@@ -226,10 +229,9 @@ final class MapModel {
             clear()
             return true
         }
-        if probe != nil {
-            clearProbe()
-            return false
-        }
+        // Nokta kalkınca harita boştur: başka sekmeden (ör. etkinlikten "Haritada
+        // göster") gelindiyse oraya dönülür.
+        clearProbe()
         return true
     }
 
@@ -331,8 +333,9 @@ final class MapModel {
     }
 
     private func refreshPois(data: DolmusData) {
-        guard let region, zoom >= Self.poiMinZoom else {
+        guard let region, zoom >= Self.poiMinZoom, mapSize.width > 0 else {
             pois = []
+            labeledIDs = []
             return
         }
         let box = GeoBox(
@@ -341,31 +344,84 @@ final class MapModel {
             west: region.center.longitude - region.span.longitudeDelta / 2,
             east: region.center.longitude + region.span.longitudeDelta / 2
         )
-        // Mahalle adları üst üste binmesin: ekranda ~110 pt'den yakınsa atlanır.
-        let metersPerPoint = 156_543.03 * cos(region.center.latitude * .pi / 180) / pow(2, zoom)
-        let separation = 110 * metersPerPoint / 111_000
-        var placedAreas: [Coordinate] = []
+        // Üst üste binmesin: noktalar önem sırasıyla (poisInView'in sırası) ekrana
+        // yerleştirilir. Simgesi daha önemli bir ada ya da simgeye çarpan nokta bu
+        // zoom'da çizilmez (yakınlaşınca çıkar); adı çarpanın adı yazılmaz, simgesi
+        // olmayan (mahalle, kafe…) o zaman hiç çizilmez.
+        func screenPoint(_ coordinate: Coordinate) -> CGPoint {
+            CGPoint(
+                x: (coordinate.longitude - box.west) / (box.east - box.west) * mapSize.width,
+                y: (box.north - coordinate.latitude) / (box.north - box.south) * mapSize.height
+            )
+        }
+        var occupied: [CGRect] = []
+        // Seçilen nokta ve yol tarifinin uçları önce: iğneleri ve altlarındaki adları
+        // örtülmesin (MapKit, başka bir işarete çarpan iğnenin adını gizliyor).
+        for place in [probe, tripFrom, tripTo].compactMap({ $0 }) {
+            let point = screenPoint(place.coordinate)
+            let width = min(CGFloat(place.label.count) * 6.5, 160) + 8
+            occupied.append(CGRect(x: point.x - 18, y: point.y - 36, width: 36, height: 36))
+            occupied.append(CGRect(x: point.x - width / 2, y: point.y, width: width, height: 30))
+        }
+        var areaCenters: [CGPoint] = []
+        var labeled: Set<Int> = []
         var result: [MapPoi] = []
-        for poi in data.poisInView(box, zoom: zoom, limit: Self.poiLimit) {
-            if poi.type == "mahalle" {
-                let tooClose = placedAreas.contains {
-                    abs($0.latitude - poi.coordinate.latitude) < separation
-                        && abs($0.longitude - poi.coordinate.longitude) < separation
+        // Çarpışıp atlananların yerine sıradakiler gelsin diye adaylar iki katı.
+        for poi in data.poisInView(box, zoom: zoom, limit: Self.poiLimit * 2) where result.count < Self.poiLimit {
+            let point = screenPoint(poi.coordinate)
+            let isArea = poi.type == "mahalle"
+            // Mahalle adları seyrek kalsın: başka bir mahalle adına ~110 pt'den yakınsa atlanır.
+            if isArea, areaCenters.contains(where: { abs($0.x - point.x) < 110 && abs($0.y - point.y) < 110 }) {
+                continue
+            }
+            let hasIcon = !isArea && !PoiStyle(type: poi.type).isIconless
+            // PoiMarker'ın simgesi: üst ortası koordinatta, 22 pt.
+            let icon = CGRect(x: point.x - 11, y: point.y, width: 22, height: 22)
+            if hasIcon, occupied.contains(where: { $0.intersects(icon.insetBy(dx: 3, dy: 3)) }) {
+                continue
+            }
+            if isArea || zoomShowsLabel(poi) {
+                let label = Self.labelFrame(poi, at: point, isArea: isArea, hasIcon: hasIcon)
+                if !occupied.contains(where: { $0.intersects(label) }) {
+                    labeled.insert(poi.id)
+                    occupied.append(label)
                 }
-                if tooClose { continue }
-                placedAreas.append(poi.coordinate)
-            } else if PoiStyle(type: poi.type).isIconless, !isLabeled(poi) {
-                continue  // simgesiz türler yalnızca adları yazılacak kadar yakında çizilir
+            }
+            if hasIcon {
+                occupied.append(icon)
+            } else if !labeled.contains(poi.id) {
+                continue
+            }
+            if isArea {
+                areaCenters.append(point)
             }
             result.append(poi)
         }
         pois = result
+        labeledIDs = labeled
     }
 
-    /// Noktanın adı bu zoom'da yazılsın mı. Durak ve eczane zaten en son zoom'da
-    /// çıktığı için adları hemen; diğerlerinde bir zoom sonra.
+    /// Noktanın adı yazılsın mı (zoom yetiyor ve başka bir ada çarpmıyor).
     func isLabeled(_ poi: MapPoi) -> Bool {
+        labeledIDs.contains(poi.id)
+    }
+
+    /// Noktanın adı bu zoom'da yazılabilir mi. Durak ve eczane zaten en son zoom'da
+    /// çıktığı için adları hemen; diğerlerinde bir zoom sonra.
+    private func zoomShowsLabel(_ poi: MapPoi) -> Bool {
         poi.type == "eczane" || poi.type == "durak" ? zoom >= poi.minZoom : zoom >= poi.minZoom + 1
+    }
+
+    /// Adın ekranda kaplayacağı yer, PoiMarker'ın düzenine göre tahmini: mahalle
+    /// adı koordinatta ortalı (büyük harf); diğerlerinde simgenin altında, en çok 120 pt.
+    private static func labelFrame(_ poi: MapPoi, at point: CGPoint, isArea: Bool, hasIcon: Bool) -> CGRect {
+        let name = poi.label.split(separator: "·").first.map { $0.trimmingCharacters(in: .whitespaces) } ?? poi.label
+        if isArea {
+            let width = CGFloat(name.count) * 7.5 + 4
+            return CGRect(x: point.x - width / 2, y: point.y - 8, width: width, height: 16)
+        }
+        let width = min(CGFloat(name.count) * 6.3, 120) + 4
+        return CGRect(x: point.x - width / 2, y: point.y + (hasIcon ? 23 : 0), width: width, height: 15)
     }
 
     /// Web haritalarındaki zoom düzeyi (256 pt'lik karolar): Flutter'daki

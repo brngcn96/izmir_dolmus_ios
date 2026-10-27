@@ -73,9 +73,10 @@ struct PoiMarker: View {
                         .shadow(color: .black.opacity(0.25), radius: 1.5, y: 1)
                 }
                 if isLabeled || style.isIconless {
+                    // Koyu haritada türün koyu rengi okunmuyor: açılır.
                     Text(name)
                         .font(.figtree(.caption2, weight: .bold))
-                        .foregroundStyle(style.color)
+                        .foregroundStyle(colorScheme == .dark ? style.color.mix(with: .white, by: 0.45) : style.color)
                         .lineLimit(1)
                         .frame(maxWidth: 120)
                         .halo()
@@ -338,9 +339,11 @@ struct NearbyListSheet: View {
                                     Text(item.hat.name)
                                         .font(.figtree(.subheadline, weight: .bold))
                                         .foregroundStyle(Color.primary)
+                                    // `Color.secondary`: `.secondary` button içinde tint'ten
+                                    // türüyor, koyu modda okunmuyordu.
                                     Text(item.distanceLabel)
                                         .font(.figtree(.caption))
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(Color.secondary)
                                 }
                                 Spacer(minLength: 4)
                                 Text(item.hat.feeLabel)

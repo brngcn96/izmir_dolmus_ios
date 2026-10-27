@@ -49,8 +49,12 @@ final class Router {
     }
 
     /// Harita sekmesine geçip `request`'i gösterir; haritanın yığınını köke indirir.
+    /// Haritanın içinden gelen istek (ör. yol tarifini düzenleme) dönülecek sekmeyi
+    /// değiştirmez: Anasayfa'dan açılan tarif düzenlense de "geri" Anasayfa'ya döner.
     func showOnMap(_ request: MapRequest) {
-        mapReturnTab = selectedTab == .map ? nil : selectedTab
+        if selectedTab != .map {
+            mapReturnTab = selectedTab
+        }
         mapRequest = request
         self[.map] = []
         selectedTab = .map

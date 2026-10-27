@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-10-27): Faz 0–6 bitti · sırada Faz 7 · çalışma düzeni değişti (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-10-28): Faz 0–6 bitti, Faz 5–6 simülatörde test edildi · sırada Faz 7 · çalışma düzeni değişti (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -419,7 +419,28 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
     tarifi" düğmesini örtüyordu; Flutter'daki gibi liste düğmeyle açılıyor.
   - List satırındaki `Label` rozeti bozuyordu (simge ayrı sütuna konuyor);
     rozet `HStack` ile kuruldu.
-  - "Haritalar'da aç" düğmesi (Apple Haritalar'a geçiş) elle denenecek.
+- **Faz 5–6 test turu (2026-10-28):** geçici XCUITest ile 18 senaryo gerçek
+  hareketlerle koşturuldu. Senaryolar: nokta, önizleme, çizgiye dokunma (dokunulan
+  piksel ekran görüntüsünde çizgi renginden bulunur), karttan hat, güzergah çipleri,
+  POI'ye dokunma, konumum, izin yok uyarısı, kategoriler, arama, hat ve etkinlik
+  detayından "Haritada göster" ile geri, koyu mod, yol tarifinin bütün girişleri,
+  düzenleme, Apple Haritalar'a geçiş, havalimanı, planlayıcı doğrulaması.
+  Bulunup düzeltilenler:
+  - Haritada düzenlenen yol tarifi dönülecek sekmeyi siliyordu; "Geri" Anasayfa
+    yerine haritada kalıyordu. `Router.showOnMap` artık haritanın içinden gelen
+    istekte saklı sekmeyi korur.
+  - Yalnızca nokta seçiliyken (ör. etkinlikten "Haritada göster") "Geri" noktayı
+    kaldırıp haritada kalıyordu ve geri düğmesi de kayboluyordu. Harita boşalınca
+    gelinen sekmeye dönülüyor. Flutter'da bu çıkışı Android'in sistem geri tuşu yapıyor.
+  - POI adları ve simgeleri üst üste biniyordu. Noktalar önem sırasıyla ekrana
+    yerleştiriliyor: çarpışan simge o zoom'da çizilmez, çarpışan ad yazılmaz.
+    Seçilen noktanın ve yol tarifi uçlarının iğne ve ad alanı önceden ayrılır;
+    önceden mahalle etiketine çarpan iğnenin adını MapKit gizliyordu.
+  - Koyu modda POI adları (koyu tür rengi) ve yakın hatlar listesindeki uzaklık
+    okunmuyordu. Uzaklıktaki `.secondary` button içinde tint'ten türüyordu,
+    `Color.secondary` kullanılıyor. Adlar koyu modda beyazla açılıyor (`Color.mix`).
+  - Apple Haritalar'ın kendi mahalle adları bizimkilerle yer yer tekrarlanıyor.
+    Flutter'daki OpenFreeMap altlığında da aynısı var; eşitlik için bırakıldı.
 - **Konu anlatımı (en sonda):** CPU işi için aktör mü `Sendable` değer tipi mi, `Task` iptali
   ve debounce, ViewModel'in gerçekten gerektiği yer, `@FocusState`.
 - **Bitti sayılır:** aynı uçlar için iOS ve Android aynı rotaları aynı sırada
