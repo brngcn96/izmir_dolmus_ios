@@ -5,6 +5,7 @@ import SwiftUI
 /// aşağı çekince yeniden yüklenir.
 struct EventsView: View {
     @Environment(EventsStore.self) private var store
+    @Environment(\.routeTransitions) private var transitions
 
     var body: some View {
         @Bindable var store = store
@@ -53,6 +54,8 @@ struct EventsView: View {
                     NavigationLink(value: Route.event(id: event.id)) {
                         EventCard(event: event)
                     }
+                    // Detay bu karttan büyüyerek açılır.
+                    .routeTransitionSource(.event(id: event.id), in: transitions)
                 }
             }
             // Boş bir List gruplu zemini çizmiyor (beyaz kalıyor); dolu ve boş

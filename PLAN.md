@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-10-28): Faz 0–6 bitti, Faz 5–6 simülatörde test edildi · sırada Faz 7 · çalışma düzeni değişti (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-10-28): Faz 0–7 bitti · sırada Faz 8 · çalışma düzeni değişti (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -446,7 +446,65 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
 - **Bitti sayılır:** aynı uçlar için iOS ve Android aynı rotaları aynı sırada
   verir (testle); planlama sırasında arayüz donmaz.
 
-### [ ] Faz 7 — Anasayfa, onboarding, açılış animasyonu (~4-5 saat)
+### [x] Faz 7 — Anasayfa, onboarding, açılış animasyonu (~4-5 saat)
+- **Yapılanlar (hepsi Claude):**
+  - `DolmusCore/Places`: `nearestPlace(to:)` (Flutter'daki
+    `LocationService.currentWithNearest`, 34.638 yer üzerinde Vincenty) ve
+    `IzmirDistrict` (etiketten ilçe adı; 30 ilçe, `trNorm` ile). 4 yeni test.
+  - Anasayfa (`HomeView`, `HomeParts`, `HomeModel`):
+    - Başlık ve konumun ilçesiyle hava durumu.
+    - "Konum veya adres ara" girişi (yol tarifini açar).
+    - Ev/İş/Önemli Noktalar çipleri. Ayarlı değilse adres sorar; basılı
+      tutunca değiştir/kaldır.
+    - Etkinlik kartı.
+    - Yakındaki hatlar: gezinmeyen mini harita, 5 renkli hat ve özet etiketi.
+      Satıra ya da haritaya dokununca konum Harita'da açılır.
+    - Son 3 arama: dokununca haritada, okla yol tarifi.
+    - Konum alınamazsa açıklama ve yeniden dene; izin reddedildiyse "Ayarlar'ı aç".
+    - En yakın yer araması `@concurrent` ile ana aktörün dışında (debug'da ~12 ms).
+  - Açılış (`SplashView`, `KeyframeAnimator`):
+    - Dolmuş soldan easeOutCubic ile kayar; yazı animasyonun %35'inden sonra
+      belirip yukarı kayar. Hareket azaltılmışsa dolmuş kaymaz.
+    - Veri en baştan arka planda yüklenir. İlk açılışta tanıtım hemen gelir;
+      sonraki açılışlarda açılış ekranı veri hazır olunca kapanır, uzarsa
+      "Yükleniyor…" yazar.
+  - Tanıtım (`OnboardingView`):
+    - Sayfalı `TabView`: Atla/İleri/Başla düğmeleri ve sayfa noktaları.
+    - Karşılama sayfasında dolmuş `PhaseAnimator` ile hafifçe sallanır.
+    - Son sayfada konum izni bağlam içinde istenir.
+    - Görülme bayrağı `@AppStorage("onboarding_done")`.
+  - Zoom geçişi: `RouteStack` bir `@Namespace`'i environment ile paylaşır.
+    Anasayfa'daki etkinlik kartı → Etkinlikler ve etkinlik kartı → detay
+    `matchedTransitionSource` + `.navigationTransition(.zoom)` kullanır.
+    Belgede kaynağı bulunamayan zoom'un ne yaptığı yazmadığı için zoom
+    yalnızca kaynağı kesin bu iki geçişte.
+  - Uygulama ikonu Icon Composer biçiminde (`AppIcon.icon`):
+    - Android'in düz ikonu görüntü işlenerek katmanlara ayrıldı: marka
+      mavisinden otomatik gradyan zemin, beyaz rota+iğne ve dolmuş. Katmanlar
+      birleşince asıl ikonla aynı.
+    - Eski `AppIcon.appiconset` kaldırıldı.
+- **Doğrulama:** 70 test yeşil. Gerçek hareketlerle (geçici XCUITest) denenenler:
+  - İlk açılış: tanıtımın üç sayfası, konum izni, "Başla".
+  - Anasayfa: konum, mini harita, satırdan Harita'ya ve geri.
+  - Ev'i ayarlayıp yol tarifi, basılı tutup kaldırma.
+  - Önemli Noktalar → kategori → Harita → geri.
+  - Etkinlik kartı ve detayda zoom geçişi; son aramadan yol tarifi.
+  - Koyu mod ve büyük yazı boyutu.
+
+  Açılış animasyonu karelerle, ikon ana ekranda görüldü. Faz 5–6 senaryoları
+  yeniden geçti.
+- **Bulgular:**
+  - Kübik anahtar kare Hermite eğrisi kuruyor: başlangıç hızı 3 × yol ÷ süre,
+    bitiş hızı 0 verilince eğri tam easeOutCubic oluyor, (t−1)³.
+  - Devre dışı birincil düğme yarı saydamdı; klavyenin üstünde dururken
+    altındaki liste içinden görünüyordu. Artık soluk ama opak.
+  - Simülatörün simüle konumu `simctl privacy` işlemlerinden sonra zaman zaman
+    düşüyor. Anasayfa o zaman 12 sn sonra "Konumun alınamadı." gösteriyor
+    (beklenen davranış); konum yeniden verilince düzeliyor.
+  - Icon Composer biçimi Xcode'un dosya şablonundaki `icon.json` (`fill`,
+    `groups[].layers[].image-name`) ve `Assets/` klasörü. actool derliyor ve
+    yedek PNG'leri (`AppIcon60x60@2x.png`…) de üretiyor. Cam, gölge ve koyu/tonlu
+    görünüm ince ayarı Icon Composer'da açılıp yapılabilir.
 - **Çıktı:** Anasayfa (hava durumu, arama girişi, Ev/İş/Önemli Noktalar çipleri,
   yakınındaki hatlar mini haritası, etkinlik girişi, son aramalar), ilk açılış
   tanıtımı (bağlam içinde konum izni), kayan dolmuş animasyonu; Icon Composer ile

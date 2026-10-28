@@ -27,7 +27,9 @@ struct PrimaryButtonStyle: ButtonStyle {
             .foregroundStyle(.white)
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
-            .background(Color.accent.opacity(isEnabled ? 1 : 0.4), in: .capsule)
+            // Kapalıyken soluk ama opak: klavyenin üstünde dururken altındaki
+            // liste içinden görünmesin.
+            .background(isEnabled ? Color.accent : Color.accent.mix(with: Color(uiColor: .systemBackground), by: 0.6), in: .capsule)
             .scaleEffect(configuration.isPressed ? 0.96 : 1)
             .opacity(configuration.isPressed ? 0.85 : 1)
             .animation(.snappy(duration: 0.15), value: configuration.isPressed)

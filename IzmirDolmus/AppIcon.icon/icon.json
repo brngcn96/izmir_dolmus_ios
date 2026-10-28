@@ -1,0 +1,28 @@
+{
+  "fill" : {
+    "automatic-gradient" : "extended-srgb:0.05490,0.30980,0.58039,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "dolmus.png",
+          "name" : "dolmus"
+        }
+      ]
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "route.png",
+          "name" : "route"
+        }
+      ]
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : [
+      "iOS"
+    ]
+  }
+}
