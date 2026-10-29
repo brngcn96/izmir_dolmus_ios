@@ -1,3 +1,4 @@
+import DolmusCore
 import SwiftUI
 import UIKit
 
@@ -40,12 +41,12 @@ extension Color {
     /// Ücrete göre renk (Flutter'daki `AppTheme.feeColor` eşikleri): 55 ₺'ye
     /// kadar yeşil, 90'a kadar marka mavisi, 140'a kadar turuncu, üstü kırmızı.
     static func fee(_ fee: Int?) -> Color {
-        guard let fee else { return .secondary }
-        switch fee {
-        case ...55: return .feeLow
-        case ...90: return .accent
-        case ...140: return .feeHigh
-        default: return .feeTop
+        switch FeeTier(fee) {
+        case .unknown: .secondary
+        case .low: .feeLow
+        case .standard: .accent
+        case .high: .feeHigh
+        case .top: .feeTop
         }
     }
 }

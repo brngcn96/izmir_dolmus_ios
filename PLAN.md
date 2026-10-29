@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-10-28): Faz 0–7 bitti · sırada Faz 8 · çalışma düzeni değişti (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-10-29): Faz 0–7 ve Faz W bitti · sırada Faz Y (Yolculuk modu, interaktif), sonra Faz 8 · çalışma düzeni (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -25,6 +25,7 @@ repo'da durur (`izmir_dolmus`); bu repo ona bağımlı olmadan klonlanıp derlen
 | Ağ | `URLSession` async/await, 3. parti kütüphane yok | |
 | Reklam ve analitik | En sonda ayrı, atlanabilir faz (Faz 9) | |
 | Çalışma düzeni | Faz 0–4: dengeli, faz başına 4-6 kilit parçayı sen yazdın. **2026-10-27'den itibaren:** kodu Claude yazar, faz sonunda kısa özet ve açıklamalı commit; konu anlatımları en sonda toplu | Kullanıcının zamanı daraldı. |
+| iOS'a özgü özellikler | **Faz W** (widget'lar) ve **Faz Y** (Yolculuk modu: Live Activity ile canlı takip), Faz 8'den önce; ikisi de interaktif | Flutter'da yok; kullanıcı bu konuları öğrenerek yapmak istiyor (2026-10-29). |
 
 Varsayımlar (itirazın varsa değiştiririz): yalnızca iPhone, yalnızca Türkçe,
 açık + koyu mod.
@@ -75,6 +76,12 @@ sonrası):**
    dosyanın güncellenmesi ve açıklamalı İngilizce commit (kalıcı onayınla).
 4. **Konu anlatımı:** en sonda, bütün fazların "Konu anlatımı" maddeleri koddan
    alıntılarla toplu anlatılır.
+
+**İstisna, Faz W ve Faz Y (2026-10-29):** yeniden interaktif. Xcode yapılandırmalarını
+(hedef, yetenekler, Info ayarları) sen yaparsın. Kilit kod parçalarının kodunu ben
+verip açıklarım, sen yazarsın. Ben derler, test eder, simülatörde doğrularım.
+Konu anlatımı en sona kalmaz, parçalarla birlikte o anda yapılır. Altyapı
+parçalarını (çekirdek modeller ve testleri, derin bağlantılar, doğrulama) ben yazarım.
 
 Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından kısalır.
 
@@ -516,6 +523,203 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
   animasyonları), kaydırma API'leri, view bileşimi.
 - **Bitti sayılır:** reklam/analitik dışında Android ile özellik eşitliği.
 - **Erken yayın noktası:** buradan Faz 8 + Faz 10 ile reklamsız yayınlanabilir.
+
+### [x] Faz W — Widget'lar (iOS'a özgü, interaktif, ~5-7 saat)
+- **Kapsam (v1):**
+  1. "Eve / İşe": küçük, orta ve kilit ekranı (dikdörtgen, satır içi, yuvarlak).
+     Yön saate göre (04:00–13:59 İşe, sonrası Eve); ⇄ düğmesi uygulamayı açmadan
+     çevirir. Dokununca tarif haritada açılır. Ev ya da İş yoksa "adresini ekle".
+  2. "Favori hatlarım": küçük (seçilen tek hat, `AppIntentConfiguration`), orta
+     (ilk 3–4 favori). Dokununca hat detayı açılır.
+  3. Control Center kontrolü: "Yol tarifi" ve "Eve git".
+- **Mimari kararlar:**
+  - **Widget veriyi kendisi yüklemez.** Ölçüm: bütün veri belleğe +32,4 MB,
+    planlayıcı +3,6 MB ekliyor; eklentinin bellek sınırı dar (Apple sayı vermiyor).
+    Uygulama `WidgetSnapshot`'ı kurup App Group'a (`group.com.izmirdolmus.app`)
+    yazar, widget yalnızca okur. Özet 36 KB (çoğu 410 hatlık katalog; tarifler ve
+    favoriler 1,5 KB); release'de kurulması ~57 ms.
+  - **Özet ne zaman yazılır:** favoriler, Ev/İş ya da ücretler değişince ve uygulama
+    arka plana geçince. Ardından `WidgetCenter.shared.reloadTimelines(ofKind:)`.
+  - **Dokunuş:** `widgetURL`/`Link` ile `izmirdolmus://…` → `onOpenURL` → Router.
+    `widgetURL` adresi kapsayan uygulamada açar (SDK belgesi), özel şema yeterli.
+    Faz 8'deki S8.4 burada yapılır.
+  - **Kontrol:** `OpenURLIntent` yalnızca Universal Link açıyor (SDK belgesi).
+    Kontrol bu yüzden uygulamayı kendisi açan bir App Intent ile yapılır
+    (`supportedModes`); ayrıntı SW.10'da doğrulanacak.
+  - **Sefer saati verisi yok:** widget'lar uygulamadaki gibi tahmini süre ve ücret gösterir.
+  - **İmza:** projede Team yok. Simülatörde App Group hesapsız çalışır; gerçek
+    cihaz için Apple Developer hesabı gerekir (Faz 10).
+- **Parçalar** (S = sen, B = ben):
+  - SW.1 (S, yapılandırma) Widget Extension hedefi: ürün adı `IzmirDolmusWidgets`;
+    Live Activity, Control ve Configuration App Intent seçenekleri açık; iOS 26.0,
+    Swift 6; `DolmusCore` bağlantısı.
+  - SW.2 (S) App Groups yeteneği (iki hedef), `izmirdolmus` URL şeması, paylaşılan
+    depo kodu (`AppGroup`).
+  - SW.3 (B, yapıldı) `WidgetSnapshot` ve `CommuteDirection` (`DolmusCore/Widget`),
+    4 test.
+  - SW.4 (S) uygulama tarafı: özeti yazmak ve widget'ı tazelemek (`WidgetSync`).
+  - SW.5 (S) `TimelineProvider`: placeholder, snapshot, timeline, yenileme politikası.
+  - SW.6 (S) görünümler: aileler (`widgetFamily`), `containerBackground`,
+    `widgetURL`, renk modları (`widgetRenderingMode`, `widgetAccentable`).
+  - SW.7 (S) `Widget` ve `WidgetBundle` tanımları.
+  - SW.8 (S) etkileşimli ⇄ düğmesi: `AppIntent` + `Button(intent:)`.
+  - SW.9 (S) yapılandırılabilir favori hat widget'ı: `AppEntity`, `EntityQuery`,
+    `WidgetConfigurationIntent`.
+  - SW.10 (S) Control Center kontrolü: `ControlWidget`, `ControlWidgetButton`.
+  - SW.11 (B) derin bağlantılar (`onOpenURL` → Router). Doğrulama: widget'ları
+    simülatörde ana ekrana ve kilit ekranına ekleyip açık, koyu ve renklendirilmiş
+    görünümde bakmak.
+- **Yapılanlar (2026-10-29):**
+  - **Kim yaptı:** SW.1'i ve iki entitlements dosyasındaki grubu sen yaptın. App
+    Group penceresi Team olmadan açılmadı, Info.plist düzenleyicisinde de zorlandın.
+    Kalan yapılandırmayı ve, isteğin üzerine, SW.5–SW.11'i ben yazdım; anlatımı
+    parçalarla birlikte verdim.
+  - **`DolmusCore/Widget`:**
+    - `WidgetSnapshot`: tarifler, favoriler, hat kataloğu.
+    - `CommuteDirection` ve `CommuteOverride`: ⇄ ile seçilen yön sıradaki
+      otomatik değişime kadar geçerli.
+    - `AppGroup`: ortak klasör ve ayarlar.
+    - `DeepLink`: `izmirdolmus://` adresleri.
+  - **`DolmusCore/Fares/FeeTier`:** ücret renk eşikleri tek yerde; uygulama ve
+    widget'lar kendi renk kataloğuna çeviriyor.
+  - **Uygulama:**
+    - `WidgetSync`: girdiler (Ev, İş, favoriler, ücretler) değişince özeti yazar ve
+      widget'ları tazeler.
+    - `Router.open(_:)` ile `RootView`'daki `onOpenURL` ve `PendingDeepLink`: dışarıdan
+      gelen adresleri ekrana çevirir.
+  - **Eklenti (`IzmirDolmusWidgets`):**
+    - "Eve / İşe": küçük, orta, kilit ekranı; ⇄ `ToggleCommuteDirectionIntent`.
+    - "Favori hatlar": `AppIntentConfiguration`, `HatEntity`, `HatQuery` (öneriler ve
+      Türkçe harf duyarsız arama).
+    - Kontroller: "Yol tarifi", "Eve git".
+  - **`Shared/` klasörü:** iki hedefte birden derlenir; kontrollerin intent'leri ve
+    `PendingDeepLink` orada.
+- **Doğrulama:** 79 paket testi yeşil. Simülatörde UI testiyle, gerçek hareketlerle:
+  - widget'ları ana ekrana ekleme;
+  - İş değişince tazelenme;
+  - ⇄ (uygulama açılmadan);
+  - "Edit Widget" ile hat seçme (öneri listesinde favoriler, arama kutusu var);
+  - orta boyda satırdan hat detayı;
+  - widget'tan haritada tarif;
+  - Control Center'a kontrol ekleyip uygulama kapalıyken dokunma ("Yol tarifi"
+    sayfası açıldı);
+  - dört adresin (`hat`, `trip`, `plan?to=home`, `settings`) doğru ekranı açması.
+
+  Hat seçicideki arama kutusunu denemedim.
+- **Bulgular:**
+  - **App Group penceresi:** Team yokken grupları hesaptan yükleyemiyor
+    (`IDEDynamicCapabilityItemModelError error 3`). Simülatörde `.entitlements`
+    dosyasına elle yazmak yetiyor. Simülatör derlemeleri yetkileri
+    `__TEXT,__entitlements` bölümüne gömüyor; `codesign -d` boş görünüyor.
+  - **Etkileşimli düğme:** `Button(intent:)` dokunuşundan sonra widget,
+    `reloadTimelines` çağrılmadan yeni çizelgeyle çizildi.
+  - **`MemberImportVisibility`:** eklenti hedefinde açık; `Button(intent:)` kullanan
+    dosya `AppIntents`'i kendisi import etmeli.
+  - **Yapılandırma farkı:** `StaticConfiguration`'lı widget'ın bağlam menüsünde
+    "Edit Widget" yok, `AppIntentConfiguration`'lının var.
+  - **Dokunma alanları:** orta boyda her `Link` ayrı bir dokunma alanı (erişilebilirlik
+    ağacında ayrı düğme). Küçük boyda tek `widgetURL` kullanıldı.
+  - **Kontroller:**
+    - `OpenURLIntent` yalnızca Universal Link açıyor. Kontrol bu yüzden
+      `supportedModes = .foreground` bir intent'le yapıldı: uygulama öne gelir,
+      `perform` uygulamada çalışır.
+    - Intent'in iki hedefte birden derlenmesi gerekti: iki hedefin paylaştığı,
+      Xcode'la eşitlenen `Shared/` klasörü.
+    - Uygulama kapalıyken açılışta istek ilk çizimden önce geliyor;
+      `onChange(…, initial: true)` yakalıyor.
+  - **Dış adres onayı:** `simctl openurl` ve `XCUIApplication.open` "Open in …?"
+    onayı gösteriyor. Widget dokunuşu göstermiyor.
+  - **iOS 26/27 API'leri:** iOS 26'da `openAppWhenRun` kullanımdan kaldırıldı,
+    yerine `supportedModes`. iOS 27 SDK'da `allowedExecutionTargets` var; en düşük
+    hedef 26 olduğu için kullanılmıyor.
+- **Konu anlatımı (parçalarla birlikte):**
+  - widget eklentisinin yaşam döngüsü: ayrı süreç, zaman çizelgesi, yenileme bütçesi;
+  - uygulama ↔ widget veri akışı (App Group);
+  - aileler ve renk modları;
+  - App Intents: yapılandırma, etkileşim, kontrol;
+  - derin bağlantılar;
+  - UIKit dönemi karşılıkları (Today extension, `NCWidgetProviding`).
+- **Bitti sayılır:**
+  - widget'lar ana ekranda ve kilit ekranında doğru veriyle görünür;
+  - ⇄ düğmesi uygulamayı açmadan yönü çevirir;
+  - dokunuşlar doğru ekrana gider;
+  - favori ya da Ev/İş değişince widget kendiliğinden tazelenir.
+
+### [ ] Faz Y — Yolculuk modu (Live Activity, interaktif, acele yok, ~8-12 saat)
+- **Fikir:** seçilen tarif "Yolculuğu başlat" ile canlı takip edilir. Kilit ekranında
+  ve Dynamic Island'da o anki adım görünür: "Durağa yürü · 210 m" → "Bornova–Altındağ'a
+  bin" → "İnişe 2,3 km" → "Sıradaki durakta in" → "Aktarma" → "Vardın". İnişe
+  yaklaşınca uyarı verilir.
+- **SDK'da doğrulanan sınırlar (2026-10-29):**
+  - **Live Activity:**
+    - Yalnızca uygulama öndeyken başlatılır (ya da `LiveActivityIntent` ile).
+    - Arka planda güncellenir ve bitirilir.
+    - İçerik durumu en çok 4 KB.
+    - Biten etkinlik kilit ekranında en çok dört saat kalır.
+    - `update(_:alertConfiguration:)` güncellemeyle birlikte uyarı verir.
+    - `ActivityStyle` (`.standard`/`.transient`) iOS 18'de geldi.
+  - **Arka planda konum (`CLBackgroundActivitySession`, iOS 17):**
+    - "Kullanırken" izniyle arka planda konum verir; mavi durum çubuğu/hap görünür.
+    - `UIBackgroundModes`'ta `location` gerekir.
+    - Oturum yalnızca uygulama öndeyken başlar, arka planda sürer.
+    - Uygulama arka planda yeniden açılırsa oturum hemen yeniden kurulmalıdır.
+    - "Her zaman" izni gerekmez.
+  - **Konum akışı:** `CLLocationUpdate.liveUpdates(.otherNavigation)` navigasyon
+    kullanımına ayarlı. Bölge izleme için `CLMonitor` (iOS 17) da var.
+  - **Simülatör:** `simctl location start --speed=<m/sn> <enlem,boylam>…` bir rota
+    boyunca konum üretir. Bir dolmuş yolculuğu bacak bacak benzetilebilir.
+- **Tasarım:**
+  - **Çekirdek (`DolmusCore`), `JourneyTracker`:** tarifin bacakları ve konumdan
+    şunları çıkarır:
+    - o anki adım,
+    - binişe ve inişe kalan yol boyu mesafe (güzergaha izdüşüm),
+    - uyarı eşikleri (inişe ~400 m ve ~150 m),
+    - GPS gürültüsüne karşı histerezis,
+    - rotadan çıkma.
+
+    Gerçek tarifler boyunca üretilmiş gürültülü sentetik izlerle test edilir.
+  - **Uygulama, `JourneySession`:**
+    - Live Activity'yi başlatır, günceller, bitirir.
+    - Konum akışını yönetir; yeniden açılışta sürdürür.
+    - Live Activity kapalıysa uyarı için yerel bildirim yedeği.
+  - **Live Activity arayüzü** (widget eklentisinde, `ActivityConfiguration`):
+    - kilit ekranı görünümü;
+    - Dynamic Island: genişletilmiş bölgeler, compact leading/trailing, minimal;
+    - düğmeler: "Bitir" ve "Sonraki adım" (`LiveActivityIntent`).
+  - **Paylaşılan tür:** `ActivityAttributes` hem uygulamada hem eklentide
+    derlenmeli (hedef üyeliği). `DolmusCore`'a konamaz: ActivityKit macOS'ta yok,
+    paket ise Mac'te test ediliyor.
+- **Parçalar:**
+  - SY.1 (B) tasarım ve sınırlar anlatımı.
+  - SY.2 (B) `JourneyTracker` ve sentetik iz testleri.
+  - SY.3 (S, yapılandırma) `NSSupportsLiveActivities`, Background Modes › Location
+    updates, paylaşılan dosyanın hedef üyeliği, konum izni metninin güncellenmesi.
+  - SY.4 (S) `ActivityAttributes` ve `ContentState`.
+  - SY.5 (S) kilit ekranı ve Dynamic Island arayüzü.
+  - SY.6 (S) başlatma, güncelleme, bitirme (`JourneySession`).
+  - SY.7 (S) arka planda konum ve yeniden açılışta sürdürme.
+  - SY.8 (S) uyarılar (`AlertConfiguration`, yerel bildirim yedeği).
+  - SY.9 (S) `LiveActivityIntent` düğmeleri.
+  - SY.10 (B+S) simülatörde rota benzetimiyle uçtan uca deneme. Gerçek cihazda
+    yürüyüş ve dolmuş denemesi sende.
+- **Riskler:**
+  - GPS doğruluğu (şehir içi, kapalı alan).
+  - Dolmuşun güzergahtan sapması.
+  - Pil.
+  - App Review'da arka planda konumun gerekçesi: kullanıcının başlattığı, görünür
+    ve yolculuk bitince kapanan bir özellik olmalı.
+- **Konu anlatımı:**
+  - ActivityKit: öznitelikler, içerik durumu, yaşam döngüsü, eskime;
+  - Dynamic Island düzeni;
+  - arka planda konum ve iOS'un uygulama yaşam döngüsü;
+  - App Intents'in uygulama sürecinde çalışması;
+  - yerel bildirimler;
+  - UIKit/GCD karşılıkları (`allowsBackgroundLocationUpdates`, `CLLocationManager` delegeleri).
+- **Bitti sayılır:**
+  - simülatörde benzetilen bir yolculukta adımlar doğru sırayla ilerler;
+  - inişe yaklaşınca uyarı gelir;
+  - Dynamic Island ve kilit ekranı doğru görünür;
+  - yolculuk bitince etkinlik ve konum oturumu kapanır.
 
 ### [ ] Faz 8 — Kalite: erişilebilirlik, performans, testler (~3-4 saat)
 - **Çıktı:** VoiceOver ve Dynamic Type uyumu, gereksiz yeniden çizimlerin

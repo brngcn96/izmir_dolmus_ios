@@ -7,15 +7,53 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AF819CA93092A62B00B2169B /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF819CA83092A62B00B2169B /* WidgetKit.framework */; };
+		AF819CAB3092A62B00B2169B /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF819CAA3092A62B00B2169B /* SwiftUI.framework */; };
+		AF819CBC3092A62C00B2169B /* IzmirDolmusWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AF819CA63092A62B00B2169B /* IzmirDolmusWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AF819CC33092A67C00B2169B /* DolmusCore in Frameworks */ = {isa = PBXBuildFile; productRef = AF819CC23092A67C00B2169B /* DolmusCore */; };
 		D0A000000000000000000018 /* DolmusCore in Frameworks */ = {isa = PBXBuildFile; productRef = D0A000000000000000000017 /* DolmusCore */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		AF819CBA3092A62C00B2169B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D0A000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AF819CA53092A62B00B2169B;
+			remoteInfo = IzmirDolmusWidgetsExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		AF819CC13092A62C00B2169B /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				AF819CBC3092A62C00B2169B /* IzmirDolmusWidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		AF819CA63092A62B00B2169B /* IzmirDolmusWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = IzmirDolmusWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AF819CA83092A62B00B2169B /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		AF819CAA3092A62B00B2169B /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		D0A000000000000000000004 /* IzmirDolmus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IzmirDolmus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0A000000000000000000019 /* DolmusCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = DolmusCore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AF819CC03092A62C00B2169B /* Exceptions for "IzmirDolmusWidgets" folder in "IzmirDolmusWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = AF819CA53092A62B00B2169B /* IzmirDolmusWidgetsExtension */;
+		};
 		D0A000000000000000000006 /* Exceptions for "IzmirDolmus" folder in "IzmirDolmus" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -26,6 +64,14 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		AF819CAC3092A62B00B2169B /* IzmirDolmusWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AF819CC03092A62C00B2169B /* Exceptions for "IzmirDolmusWidgets" folder in "IzmirDolmusWidgetsExtension" target */,
+			);
+			path = IzmirDolmusWidgets;
+			sourceTree = "<group>";
+		};
 		D0A000000000000000000005 /* IzmirDolmus */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -34,9 +80,24 @@
 			path = IzmirDolmus;
 			sourceTree = "<group>";
 		};
+		D0A0000000000000000000F1 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		AF819CA33092A62B00B2169B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AF819CAB3092A62B00B2169B /* SwiftUI.framework in Frameworks */,
+				AF819CA93092A62B00B2169B /* WidgetKit.framework in Frameworks */,
+				AF819CC33092A67C00B2169B /* DolmusCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D0A000000000000000000009 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -48,11 +109,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AF819CA73092A62B00B2169B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AF819CA83092A62B00B2169B /* WidgetKit.framework */,
+				AF819CAA3092A62B00B2169B /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		D0A000000000000000000002 = {
 			isa = PBXGroup;
 			children = (
 				D0A000000000000000000005 /* IzmirDolmus */,
 				D0A000000000000000000019 /* DolmusCore */,
+				AF819CAC3092A62B00B2169B /* IzmirDolmusWidgets */,
+				D0A0000000000000000000F1 /* Shared */,
+				AF819CA73092A62B00B2169B /* Frameworks */,
 				D0A000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -61,6 +134,7 @@
 			isa = PBXGroup;
 			children = (
 				D0A000000000000000000004 /* IzmirDolmus.app */,
+				AF819CA63092A62B00B2169B /* IzmirDolmusWidgetsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -68,6 +142,30 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		AF819CA53092A62B00B2169B /* IzmirDolmusWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AF819CBD3092A62C00B2169B /* Build configuration list for PBXNativeTarget "IzmirDolmusWidgetsExtension" */;
+			buildPhases = (
+				AF819CA23092A62B00B2169B /* Sources */,
+				AF819CA33092A62B00B2169B /* Frameworks */,
+				AF819CA43092A62B00B2169B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AF819CAC3092A62B00B2169B /* IzmirDolmusWidgets */,
+				D0A0000000000000000000F1 /* Shared */,
+			);
+			name = IzmirDolmusWidgetsExtension;
+			packageProductDependencies = (
+				AF819CC23092A67C00B2169B /* DolmusCore */,
+			);
+			productName = IzmirDolmusWidgetsExtension;
+			productReference = AF819CA63092A62B00B2169B /* IzmirDolmusWidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		D0A000000000000000000007 /* IzmirDolmus */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D0A00000000000000000000E /* Build configuration list for PBXNativeTarget "IzmirDolmus" */;
@@ -75,13 +173,16 @@
 				D0A000000000000000000008 /* Sources */,
 				D0A000000000000000000009 /* Frameworks */,
 				D0A00000000000000000000A /* Resources */,
+				AF819CC13092A62C00B2169B /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				AF819CBB3092A62C00B2169B /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				D0A000000000000000000005 /* IzmirDolmus */,
+				D0A0000000000000000000F1 /* Shared */,
 			);
 			name = IzmirDolmus;
 			packageProductDependencies = (
@@ -101,6 +202,9 @@
 				LastSwiftUpdateCheck = 2700;
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
+					AF819CA53092A62B00B2169B = {
+						CreatedOnToolsVersion = 27.0;
+					};
 					D0A000000000000000000007 = {
 						CreatedOnToolsVersion = 27.0;
 					};
@@ -121,11 +225,19 @@
 			projectRoot = "";
 			targets = (
 				D0A000000000000000000007 /* IzmirDolmus */,
+				AF819CA53092A62B00B2169B /* IzmirDolmusWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		AF819CA43092A62B00B2169B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D0A00000000000000000000A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -136,6 +248,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		AF819CA23092A62B00B2169B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D0A000000000000000000008 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -145,7 +264,79 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		AF819CBB3092A62C00B2169B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AF819CA53092A62B00B2169B /* IzmirDolmusWidgetsExtension */;
+			targetProxy = AF819CBA3092A62C00B2169B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		AF819CBE3092A62C00B2169B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = IzmirDolmusWidgets/IzmirDolmusWidgetsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = IzmirDolmusWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = IzmirDolmusWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.izmirdolmus.app.IzmirDolmusWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		AF819CBF3092A62C00B2169B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = IzmirDolmusWidgets/IzmirDolmusWidgetsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = IzmirDolmusWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = IzmirDolmusWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.izmirdolmus.app.IzmirDolmusWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 		D0A00000000000000000000C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -270,12 +461,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = IzmirDolmus/IzmirDolmus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IzmirDolmus/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "İzmir Dolmuş";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Yakınından geçen dolmuş hatlarını göstermek için konumun kullanılır.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -287,6 +480,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.izmirdolmus.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -302,12 +496,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = IzmirDolmus/IzmirDolmus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IzmirDolmus/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "İzmir Dolmuş";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Yakınından geçen dolmuş hatlarını göstermek için konumun kullanılır.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -319,6 +515,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.izmirdolmus.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -332,6 +529,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		AF819CBD3092A62C00B2169B /* Build configuration list for PBXNativeTarget "IzmirDolmusWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AF819CBE3092A62C00B2169B /* Debug */,
+				AF819CBF3092A62C00B2169B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D0A00000000000000000000B /* Build configuration list for PBXProject "IzmirDolmus" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -353,6 +559,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AF819CC23092A67C00B2169B /* DolmusCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DolmusCore;
+		};
 		D0A000000000000000000017 /* DolmusCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DolmusCore;

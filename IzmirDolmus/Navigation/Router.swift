@@ -60,3 +60,29 @@ final class Router {
         selectedTab = .map
     }
 }
+
+extension Router {
+    /// Uygulama dışından gelen adresi gösterir: widget'a dokunuş (`onOpenURL`)
+    /// ya da Control Center kontrolü (`PendingDeepLink`).
+    func open(_ link: DeepLink, home: PlacePoint?, work: PlacePoint?) {
+        switch link {
+        case .commute(let direction):
+            let from = direction == .toWork ? home : work
+            let to = direction == .toWork ? work : home
+            if let from, let to {
+                showOnMap(.trip(from: from, to: to))
+            } else {
+                planTrip(from: from, to: to)
+            }
+        case .hat(let id):
+            show(.hat(id: id), in: .hats)
+        case .tripPlanner:
+            planTrip()
+        case .goHome:
+            planTrip(to: home)
+        case .settings:
+            self[.settings] = []
+            selectedTab = .settings
+        }
+    }
+}

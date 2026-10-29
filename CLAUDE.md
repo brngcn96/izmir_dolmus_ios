@@ -21,6 +21,12 @@ daraldığı için Faz 5'ten itibaren düzen değişti. Türkçe konuş.
   2026-10-27 tarihli kalıcı onayı; mesajın sonuna `Co-Authored-By` satırı).
 - Konu anlatımları en sona kaldı: bütün fazlar bitince, `PLAN.md`'deki faz
   konuları projedeki koddan alıntılarla, UIKit/GCD karşılıklarıyla toplu anlatılır.
+- **İstisna, Faz W (widget'lar) ve Faz Y (Yolculuk modu), 2026-10-29:** yeniden
+  interaktif. Xcode yapılandırmalarını (hedef, yetenekler, Info) kullanıcı yapar.
+  Kilit kod parçalarının kodunu sen verip açıklarsın, kullanıcı yazar; sen derler,
+  test eder, doğrularsın. Altyapıyı (çekirdek modeller ve testleri, derin bağlantılar,
+  doğrulama) sen yazarsın. Konu anlatımı parçalarla birlikte o anda yapılır.
+  Yolculuk modunda acele yok, hazırlık titiz olmalı.
 
 ## Yapı
 
