@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-11-02): Faz 0–7, Faz W ve Faz Y bitti · Faz 8 `phase-8` dalında sürüyor · çalışma düzeni (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-11-02): Faz 0–8, Faz W ve Faz Y bitti · sırada Faz 10 (yayın, Apple Developer hesabı gerekir) ve isteğe bağlı Faz 9 · çalışma düzeni (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -770,13 +770,97 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
   - Dynamic Island ve kilit ekranı doğru görünür;
   - yolculuk bitince etkinlik ve konum oturumu kapanır.
 
-### [ ] Faz 8 — Kalite: erişilebilirlik, performans, testler (~3-4 saat)
+### [x] Faz 8 — Kalite: erişilebilirlik, performans, testler (~3-4 saat)
 - **Çıktı:** VoiceOver ve Dynamic Type uyumu, gereksiz yeniden çizimlerin
   temizliği, kritik akış UI testi, değerlendirme isteği; isteğe bağlı olarak
   izmirdolmus.com hat sayfalarından uygulamaya Universal Link.
 - **Parçalar:** S8.1 erişilebilirlik etiketleri · S8.2 `Self._printChanges()` ile
   yeniden çizim avı · S8.3 bir akış için XCUITest · S8.4 `onOpenURL` → Router ·
   S8.5 `requestReview` kuralları.
+- **Yapılanlar (hepsi Claude, 2026-10-31 – 11-02):**
+  - **Kalıcı UI testi (S8.3):** `IzmirDolmusUITests` hedefi, paylaşılan şemanın Test
+    eyleminde (⌘U paket testleriyle birlikte koşar). Test modu (`-uiTesting`, yalnızca
+    Debug, `AppEnvironment`): ağ istekleri hazır cevaplarla döner, ayarlar her açılışta
+    silinen ayrı bir alanda, önbellekler geçici klasörde; gerçek sunuculara ve
+    simülatördeki asıl veriye dokunulmaz. Akışlar: tanıtım; hat arama → favori →
+    Favoriler → çıkarma; yol tarifi → seçenek → adım adım; etkinlik (konumsuz ve
+    konumlu) → haritada göster → geri; Önemli Noktalar → tür → yer; haritada uzun
+    basma → yakın hatlar → hat;
+    geri bildirim gönderimi (sahte forma); derin bağlantı; değerlendirme isteği (koşullar
+    hazırken kart çıkar, ilk kullanım gününde çıkmaz).
+    Elemanlar koordinatla değil erişilebilirlik etiketleriyle bulunur. Yolculuk modu
+    için `JourneyModeTests`: konum gerçek bir tarifin noktaları boyunca taşınırken
+    (uygulama arka planda) kart, uyarı ve varış; karttaki düğmeler, yeniden açılışta
+    sürdürme, karta dokunma.
+  - **Erişilebilirlik (S8.1):**
+    - Apple'ın denetimi (`performAccessibilityAudit`) 14 ana ekranda, varsayılan ve
+      en büyük yazı boyutunda. Test dokunma alanı, açıklama ve öğe türü denetimlerinde
+      düşer; kontrast, Dynamic Type ve kesik metin raporlanır (aşağıda, Bulgular).
+    - Dokunma alanları en az 44 pt (`tapTarget()`): Tümünü gör, Temizle, Yenile, yol
+      tarifi oku, iki "Konumumu kullan", kapatma düğmeleri, yakın hat oku, Haritalar'da aç.
+    - İkincil metin rengi `TextSecondary` (açık #5F6979, koyu #9C9CA3; yüksek
+      kontrastta daha koyu/açık). Sistemin `.secondary`'si küçük yazıda beyaz zeminde
+      yaklaşık 3,5:1 kalıyordu; yeni renk açık zeminlerde 4,9–5,6:1 (Flutter'daki
+      #667085 tonuna yakın). Arama ipucu ve kaynak satırı soluk (`.tertiary`) değil.
+    - VoiceOver: `~`, `–`, `₺` ve `→` içeren etiketlerin okunuşu açık (`spokenFee`,
+      `spokenDistance`; "40–65 ₺" → "40 ile 65 lira arası"). Hat satırı, ücret bölgesi,
+      yakın hat, tarif kartı ve şeridi tek öğe; seçili çip ve satırlar `isSelected`;
+      iki sorudaki "Evet" sorusuyla birlikte; basılı tutma menülerinin karşılığı
+      (`accessibilityActions`); haritadaki noktalar adıyla düğme; harita mesajı ve geri
+      bildirim sonucu okunur (`AccessibilityNotification.Announcement`); başlıklar
+      `isHeader`; dekoratif görseller gizli. Widget'lar ve Live Activity'de süre,
+      ücret, adım ve mesafe okunuşları.
+    - Dynamic Type: büyük boyutlarda yan yana sığmayan düğmeler alt alta (tarif bandı,
+      nokta paneli, yolculuk düğmeleri), satırlar alt alta, sabit yükseklikler
+      `minHeight`, Önemli Noktalar ızgarası genişler. Harita üstündeki yüzen kontroller
+      xxxLarge'da, alt bant accessibility2'de durur: yazı sınırsız büyüyünce haritayı
+      kaplıyordu.
+  - **Yeniden çizim avı (S8.2):** geçici bir kopyada 18 görünümün `body`'sine
+    `Self._logChanges()` kondu, uygulama UI testiyle gezdirildi, kayıtlar
+    `log stream` ile toplandı. Boşta bekleme ve Anasayfa kaydırma: 0 yeniden hesaplama.
+    Haritayı kaydırma: yalnızca nokta işaretleri (16), `MapScreen` 0. Hat aramada her
+    harfte yalnızca görünen 5–10 satır. Bulunup düzeltilen: bu fazda eklenen
+    `@Environment(\.requestReview)` her ortam güncellemesinde "değişmiş" sayılıyor,
+    sekme değişince bütün haritayı yeniden kurduruyordu; istek `MainTabView`'a taşındı.
+    Bilerek bırakılan: açılışta `HomeView` 6 kez `_client changed` ile (APIClient
+    `Equatable` değil; açılıştan sonra olmuyor). Tek sözlükteki `Router.paths`
+    yüzünden sekme değişince var olan `RouteStack`'ler yeniden hesaplanıyor (Faz 2'deki
+    karar; ucuz).
+  - **Ana aktörde iş:** release'de Mac'te ölçüldü: yer araması 2,5–6 ms (en kötü 18 ms),
+    hat araması 0,5 ms, kategori listesi 4–15 ms. Önemli Noktalar listesi artık bir kez
+    ve ana aktörün dışında hesaplanıyor (önceden her çizimde, ana thread'de). Yer
+    araması değiştirilmedi.
+  - **Değerlendirme isteği (S8.5):** `ReviewPolicy` (DolmusCore, Flutter'daki
+    `ReviewPrompt` kuralları: en az 2 başarılı yol tarifi, ilk kullanım gününden
+    sonraki bir gün, en çok 3 deneme, aralarında 7 gün; 7 test) ve `ReviewStore`.
+    Başarılı yol tarifinden sonra haritadan çıkılırken (Geri ya da başka sekme)
+    `requestReview`. Debug'da sistem kartı her istekte gösteriyor ("Enjoying İzmir
+    Dolmuş?", beş yıldız, "Not Now"); TestFlight ve App Store'da gösterip göstermemeye
+    sistem karar verir.
+  - **S8.4** (`onOpenURL` → Router) Faz W'de yapıldı. Universal Link Faz 10'a kaldı
+    (alan adında `apple-app-site-association` ve Team gerekir).
+- **Doğrulama (iPhone 18 Pro simülatörü):** şemanın bütün testleri geçiyor: 99 paket
+  testi, 10 akış testi, 2 Yolculuk modu testi ve iki erişilebilirlik denetimi
+  (varsayılan ve en büyük yazı boyutu; zorunlu denetimlerde sorun yok). İlk denetimde
+  Anasayfa'da 20 sorun vardı (kontrast, dokunma alanı, kesik metin); düzeltmelerden
+  sonra kalanlar aşağıdaki yanlış alarm türlerinden.
+- **Bulgular:**
+  - **Denetimin yanlış alarmları:** cam düğmelerin ve iOS 26'nın yarı saydam
+    sheet'lerinin arkasında harita olunca kontrast ölçümü haritaya göre değişiyor; harita
+    üstü kontrollerde bilerek sınırlanan yazı boyutu "Dynamic Type yok" sayılıyor;
+    VoiceOver etiketi görünen metinden uzun olunca ("40 ile 65 lira arası" / "40–65 ₺")
+    metin "kesik" sayılıyor; sistemin araç çubuğu düğmeleri, liste başlıkları, MapKit'in
+    "Yasal" bağlantısı. Gerçek cihazda güneş altında bakılmalı: renkli camlı düğmelerde
+    beyaz yazı ve "Adım adım" sheet'i haritanın üstünde yarı saydam; gerekirse
+    `presentationBackground` ile opaklaştırılır.
+  - **Argüman alanı:** `-anahtar değer` başlatma argümanları ad verilmiş `UserDefaults`
+    alanında da öncelikli (macOS'ta denendi, testlerde görüldü). Testin başlangıç
+    değerleri için iyi, ama uygulamanın değiştireceği bir değeri sabitler: tanıtım testi
+    `-onboarding_done NO` ile "Başla"dan sonra hiç bitmiyordu.
+  - **Test konumu:** `XCUIDevice.shared.location` UI testinden simülatöre konum veriyor;
+    uygulama arka plandayken de ulaşıyor (Faz Y'nin rota testi bununla).
+  - VoiceOver simülatörde çalışmıyor: ağaç ve etiketler testlerle denendi, sesli okuma
+    gerçek cihazda denenmeli.
 - **Konu anlatımı (en sonda):** SwiftUI performans modeli (bağımlılık takibi, kimlik,
   Instruments), erişilebilirlik, derin bağlantılar.
 - **Bitti sayılır:** harita ve listeler takılmasız; VoiceOver ile ana akışlar

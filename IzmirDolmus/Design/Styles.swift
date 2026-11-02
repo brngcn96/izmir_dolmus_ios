@@ -36,6 +36,15 @@ struct PrimaryButtonStyle: ButtonStyle {
     }
 }
 
+extension View {
+    /// Küçük bir düğmenin (etiketinin) dokunma alanını en az 44 pt yapar. Düğmenin
+    /// dışına konan `frame` işe yaramaz; etiketin içinde olmalı.
+    func tapTarget() -> some View {
+        frame(minWidth: 44, minHeight: 44)
+            .contentShape(.rect)
+    }
+}
+
 extension ButtonStyle where Self == PrimaryButtonStyle {
     /// `.buttonStyle(.primary)` diye yazılabilsin diye.
     static var primary: PrimaryButtonStyle { PrimaryButtonStyle() }

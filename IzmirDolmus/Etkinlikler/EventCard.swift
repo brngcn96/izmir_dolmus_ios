@@ -28,7 +28,7 @@ struct EventCard: View {
                 if let venue = event.venue {
                     Text(venue)
                         .font(.figtree(.subheadline))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.textSecondary)
                         .lineLimit(typeSize.isAccessibilitySize ? 2 : 1)
                 }
             }

@@ -41,6 +41,17 @@
                ReferencedContainer = "container:DolmusCore">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D0A000000000000000000107"
+               BuildableName = "IzmirDolmusUITests.xctest"
+               BlueprintName = "IzmirDolmusUITests"
+               ReferencedContainer = "container:IzmirDolmus.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

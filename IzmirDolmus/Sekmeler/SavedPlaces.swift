@@ -50,7 +50,7 @@ struct SavedPlaceRow: View {
                     .foregroundStyle(Color.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text(place?.label ?? "Ayarlanmadı")
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(Color.textSecondary)
                     .lineLimit(typeSize.isAccessibilitySize ? 3 : 1)
             }
         }
@@ -74,7 +74,7 @@ struct PlacePickerView: View {
             List {
                 if query.count < 3 {
                     Text("En az 3 harf yaz.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.textSecondary)
                 } else {
                     ForEach(results, id: \.self) { place in
                         Button {

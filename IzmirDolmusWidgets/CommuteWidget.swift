@@ -61,6 +61,7 @@ struct CommuteWidgetView: View {
                 switch family {
                 case .accessoryInline:
                     Text("\(title) ~\(commute.recommended.minutes) dk · \(commute.recommended.feeLabel)")
+                        .accessibilityLabel("\(title) yaklaşık \(commute.recommended.minutes) dakika, \(commute.recommended.feeLabel.spokenFee)")
                 case .accessoryRectangular:
                     rectangular(commute)
                 case .systemMedium:
@@ -101,12 +102,14 @@ struct CommuteWidgetView: View {
             Text("~\(option.minutes) dk")
                 .font(.system(.title, design: .rounded, weight: .heavy))
                 .minimumScaleFactor(0.7)
+                .accessibilityLabel("yaklaşık \(option.minutes) dakika")
             Text(transfersText(option))
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Text(option.feeLabel)
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(Color.fee(option.feeMin))
+                .accessibilityLabel(option.feeLabel.spokenFee)
             StepIcons(steps: option.steps)
                 .padding(.top, 2)
         }
@@ -122,12 +125,14 @@ struct CommuteWidgetView: View {
                 Spacer(minLength: 0)
                 Text("~\(option.minutes) dk")
                     .font(.system(.title, design: .rounded, weight: .heavy))
+                    .accessibilityLabel("yaklaşık \(option.minutes) dakika")
                 Text(transfersText(option))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Text(option.feeLabel)
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(Color.fee(option.feeMin))
+                    .accessibilityLabel(option.feeLabel.spokenFee)
             }
             VStack(alignment: .leading, spacing: 6) {
                 Text("\(commute.fromLabel) → \(commute.toLabel)")
@@ -143,6 +148,7 @@ struct CommuteWidgetView: View {
                     Text("Başka: ~\(other.minutes) dk · \(transfersText(other))")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
+                        .accessibilityLabel("Başka seçenek: yaklaşık \(other.minutes) dakika, \(transfersText(other))")
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -159,11 +165,13 @@ struct CommuteWidgetView: View {
             Label("\(title) ~\(option.minutes) dk", systemImage: symbol)
                 .font(.headline)
                 .widgetAccentable()
+                .accessibilityLabel("\(title) yaklaşık \(option.minutes) dakika")
             Text(rides.joined(separator: " › "))
                 .font(.caption)
                 .lineLimit(1)
             Text("\(transfersText(option)) · \(option.feeLabel)")
                 .font(.caption)
+                .accessibilityLabel("\(transfersText(option)), \(option.feeLabel.spokenFee)")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -228,6 +236,19 @@ private struct StepIcons: View {
             }
         }
         .font(.caption)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spokenLabel)
+    }
+
+    /// "yürü, Buca - Bornova dolmuşu, yürü".
+    private var spokenLabel: String {
+        steps.map { step in
+            switch step {
+            case .walk: "yürü"
+            case .ride(_, let name): "\(name) dolmuşu"
+            }
+        }
+        .joined(separator: ", ")
     }
 }
 
@@ -241,6 +262,7 @@ private struct StepRow: View {
             Label("\(meters) m yürü", systemImage: "figure.walk")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .accessibilityLabel("\(meters) metre yürü")
         case .ride(_, let name):
             Label(name, systemImage: "bus.fill")
                 .font(.caption.weight(.semibold))

@@ -133,35 +133,39 @@ struct RouteBanner: View {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 Image(systemName: "bus.fill")
                     .foregroundStyle(.accent)
+                    .accessibilityHidden(true)
                 Text(hat.name)
                     .font(.figtree(.headline, weight: .bold))
-                    .lineLimit(2)
+                    .lineLimit(3)
                 Spacer(minLength: 4)
                 Text(hat.feeLabel)
                     .font(.figtree(.subheadline, weight: .bold))
                     .monospacedDigit()
                     .foregroundStyle(Color.fee(hat.feeMin))
+                    .accessibilityLabel(hat.feeLabel.spokenFee)
                 Button(action: onClose) {
                     Image(systemName: "xmark")
                         .font(.footnote.weight(.bold))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 28, height: 28)
+                        .foregroundStyle(.textSecondary)
+                        .tapTarget()
                 }
                 .accessibilityLabel("Kapat")
+                .padding(-8)
             }
             if let meters = model.boardMeters, let probe = model.probe {
                 Label("Bu hatta binmek için \(NearbyHat.distanceLabel(meters)) yürü (\(probe.label))", systemImage: "figure.walk")
                     .font(.figtree(.subheadline))
+                    .accessibilityLabel("Bu hatta binmek için \(NearbyHat.distanceLabel(meters).spokenDistance) yürü (\(probe.label))")
             }
             if let geom = model.selectedGeom {
                 Label("Resmi İBB güzergahı (UKOME): \(geom.ad)", systemImage: "info.circle")
                     .font(.figtree(.footnote))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.textSecondary)
                     .lineLimit(2)
             } else {
                 Label("Bu hat için güzergah verisi yok.", systemImage: "info.circle")
                     .font(.figtree(.footnote))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.textSecondary)
             }
             if model.geoms.count > 1 {
                 ScrollView(.horizontal) {
@@ -181,6 +185,7 @@ struct RouteBanner: View {
                                     .background(isSelected ? Color.accent : Color.brandSoft, in: .capsule)
                             }
                             .buttonStyle(.plain)
+                            .accessibilityAddTraits(isSelected ? .isSelected : [])
                         }
                     }
                 }
@@ -205,6 +210,8 @@ struct ProbePanel: View {
     let onShowNearest: (String) -> Void
     let onDirections: (PlacePoint) -> Void
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     var body: some View {
         if model.nearby.isEmpty {
             VStack(alignment: .leading, spacing: 6) {
@@ -217,7 +224,7 @@ struct ProbePanel: View {
                     HStack {
                         Text("En yakını: \(nearest.hat.name) · \(nearest.distanceLabel)")
                             .font(.figtree(.subheadline))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.textSecondary)
                         Spacer()
                         Button("Göster") { onShowNearest(nearest.hat.id) }
                             .font(.figtree(.subheadline, weight: .bold))
@@ -225,7 +232,7 @@ struct ProbePanel: View {
                 } else {
                     Text("Buraya yürüme mesafesinde hat bulunamadı.")
                         .font(.figtree(.subheadline))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.textSecondary)
                 }
             }
             .padding(16)
@@ -234,7 +241,9 @@ struct ProbePanel: View {
             .padding(.horizontal, 12)
         } else {
             GlassEffectContainer(spacing: 10) {
-                HStack(spacing: 10) {
+                // Büyük yazı boyutlarında iki düğme yan yana sığmaz.
+                let layout = typeSize >= .xxLarge ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(spacing: 10))
+                layout {
                     Button {
                         model.isShowingNearbyList = true
                     } label: {
@@ -244,7 +253,7 @@ struct ProbePanel: View {
                         )
                         .font(.figtree(.headline, weight: .semibold))
                         .padding(.horizontal, 18)
-                        .frame(height: 50)
+                        .frame(minHeight: 50)
                     }
                     .glassEffect(.regular.interactive(), in: .capsule)
                     if let probe = model.probe {
@@ -255,7 +264,7 @@ struct ProbePanel: View {
                                 .font(.figtree(.headline, weight: .semibold))
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 18)
-                                .frame(height: 50)
+                                .frame(minHeight: 50)
                         }
                         .glassEffect(.regular.tint(.accent).interactive(), in: .capsule)
                     }
@@ -276,16 +285,18 @@ struct TappedLinesCard: View {
             HStack {
                 Text(hats.count == 1 ? "Bu çizgi:" : "Bu çizgide \(hats.count) hat üst üste:")
                     .font(.figtree(.footnote, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.textSecondary)
                 Spacer()
                 Button {
                     model.dismissTappedHats()
                 } label: {
                     Image(systemName: "xmark")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.textSecondary)
+                        .tapTarget()
                 }
                 .accessibilityLabel("Kapat")
+                .padding(-12)
             }
             ForEach(hats) { hat in
                 Button {
@@ -298,17 +309,18 @@ struct TappedLinesCard: View {
                         Text(hat.name)
                             .font(.figtree(.subheadline, weight: .bold))
                             .foregroundStyle(Color.primary)
-                            .lineLimit(1)
+                            .lineLimit(2)
                         Spacer()
                         Text(hat.feeLabel)
                             .font(.figtree(.footnote, weight: .bold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.textSecondary)
                         Image(systemName: "chevron.right")
                             .font(.caption.weight(.bold))
                             .foregroundStyle(.tertiary)
                     }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("\(hat.name), \(hat.feeLabel.spokenFee)")
             }
         }
         .padding(14)
@@ -334,16 +346,16 @@ struct NearbyListSheet: View {
                             HStack(spacing: 12) {
                                 Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
                                     .font(.title3)
-                                    .foregroundStyle(isOn ? model.previewColor(for: item.hat.id) : Color.secondary)
+                                    .foregroundStyle(isOn ? model.previewColor(for: item.hat.id) : Color.textSecondary)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(item.hat.name)
                                         .font(.figtree(.subheadline, weight: .bold))
                                         .foregroundStyle(Color.primary)
-                                    // `Color.secondary`: `.secondary` button içinde tint'ten
+                                    // `Color.textSecondary`: `.secondary` button içinde tint'ten
                                     // türüyor, koyu modda okunmuyordu.
                                     Text(item.distanceLabel)
                                         .font(.figtree(.caption))
-                                        .foregroundStyle(Color.secondary)
+                                        .foregroundStyle(Color.textSecondary)
                                 }
                                 Spacer(minLength: 4)
                                 Text(item.hat.feeLabel)
@@ -353,12 +365,16 @@ struct NearbyListSheet: View {
                             }
                         }
                         .buttonStyle(.borderless)
+                        .accessibilityLabel(item.spokenLabel)
+                        .accessibilityHint("Çizgiyi haritada gösterir ya da kaldırır")
+                        .accessibilityAddTraits(isOn ? .isSelected : [])
                         Button {
                             onOpen(item.hat.id)
                         } label: {
                             Image(systemName: "chevron.right.circle.fill")
                                 .font(.title3)
                                 .foregroundStyle(.accent)
+                                .tapTarget()
                         }
                         .buttonStyle(.borderless)
                         .accessibilityLabel("\(item.hat.name) hattını aç")

@@ -11,16 +11,18 @@ struct HatSummarySections: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(hat.name)
                     .font(.figtree(.title3, weight: .extraBold))
+                    .accessibilityAddTraits(.isHeader)
                 if let ilce = hat.ilce, !ilce.isEmpty {
                     Text(ilce)
                         .font(.figtree(.subheadline))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.textSecondary)
                 }
             }
             if hat.segments.isEmpty {
                 LabeledContent("Ücret", value: "bilinmiyor")
             } else {
                 LabeledContent("Ücret", value: hat.feeLabel)
+                    .accessibilityValue(hat.feeLabel.spokenFee)
                 LabeledContent("Ücret bölgesi", value: "\(hat.segments.count)")
             }
         }
@@ -42,6 +44,8 @@ struct HatSummarySections: View {
                     }
                 }
                 .padding(.vertical, 4)
+                // Çiplerin her biri ayrı durak olmasın: hepsi tek seferde okunur.
+                .accessibilityElement(children: .combine)
             }
         }
     }
@@ -85,7 +89,7 @@ private struct FareRow: View {
                 if segment.firstTime {
                     Text("yeni")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.textSecondary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -94,6 +98,13 @@ private struct FareRow: View {
                 .monospacedDigit()
                 .foregroundStyle(Color.fee(segment.fee))
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spokenLabel)
+    }
+
+    private var spokenLabel: String {
+        let route = segment.stops.count > 1 ? "\(segment.fromLabel), \(segment.toLabel)" : segment.name
+        return [route, segment.firstTime ? "yeni" : nil, segment.feeText.spokenFee].compactMap { $0 }.joined(separator: ", ")
     }
 }
 
@@ -106,6 +117,7 @@ struct FareSheet: View {
             List {
                 Section {
                     LabeledContent("Ücret", value: segment.feeText)
+                        .accessibilityValue(segment.feeText.spokenFee)
                     if let distanceKm = segment.distanceKm {
                         LabeledContent("Mesafe", value: "\(distanceKm.formatted(.number.precision(.fractionLength(0...1)))) km")
                     }
@@ -117,7 +129,7 @@ struct FareSheet: View {
                         } icon: {
                             Text("\(index + 1)")
                                 .font(.callout.monospacedDigit())
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.textSecondary)
                         }
                     }
                 }

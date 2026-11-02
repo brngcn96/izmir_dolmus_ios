@@ -26,7 +26,7 @@ final class UserStore {
 
     private let defaults: UserDefaults
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = AppEnvironment.defaults) {
         self.defaults = defaults
         favoriteHatIDs = defaults.stringArray(forKey: Keys.favorites) ?? []
         home = defaults.codable(PlacePoint.self, forKey: Keys.home)

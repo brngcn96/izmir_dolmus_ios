@@ -26,9 +26,10 @@ struct OnboardingView: View {
                 Spacer()
                 Button("Atla", action: onFinish)
                     .font(.figtree(.subheadline, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.textSecondary)
                     .opacity(page < Self.lastPage ? 1 : 0)
                     .disabled(page == Self.lastPage)
+                    .accessibilityHidden(page == Self.lastPage)
                     .animation(.easeOut(duration: 0.2), value: page)
             }
             .frame(height: 48)
@@ -141,6 +142,7 @@ struct OnboardingView: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(.accent)
                 .disabled(locationState == .asking)
+                .accessibilityLabel("Konumumu kullan")
             }
         }
         .padding(16)
@@ -213,7 +215,7 @@ private struct BodyText: View {
     var body: some View {
         Text(text)
             .font(.figtree(.body, weight: .medium))
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.textSecondary)
             .multilineTextAlignment(.center)
             .lineSpacing(4)
     }

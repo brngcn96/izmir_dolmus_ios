@@ -42,7 +42,7 @@ extension Color {
     /// kadar yeşil, 90'a kadar marka mavisi, 140'a kadar turuncu, üstü kırmızı.
     static func fee(_ fee: Int?) -> Color {
         switch FeeTier(fee) {
-        case .unknown: .secondary
+        case .unknown: .textSecondary
         case .low: .feeLow
         case .standard: .accent
         case .high: .feeHigh

@@ -12,6 +12,22 @@ extension Journey {
         transfers == 0 ? "aktarmasız" : "\(transfers) aktarma"
     }
 
+    /// VoiceOver için: "yaklaşık 42 dakika, 40 ile 60 lira arası".
+    var spokenSummary: String {
+        "yaklaşık \(estimatedMinutes) dakika, \(feeLabel.spokenFee)"
+    }
+
+    /// VoiceOver için: "90 metre yürü, Buca - Bornova dolmuşu, 15 metre yürü".
+    var spokenLegs: String {
+        legs.map { leg in
+            switch leg {
+            case .walk(let walk): "\(Int(walk.meters.rounded())) metre yürü"
+            case .ride(let ride): "\(ride.hatName) dolmuşu"
+            }
+        }
+        .joined(separator: ", ")
+    }
+
     /// Bacakların sırası ve dolmuş bacaklarının kaçıncı dolmuş olduğu (renk için).
     var numberedLegs: [(offset: Int, leg: JourneyLeg, ride: Int)] {
         var rideNumber = 0
@@ -45,7 +61,7 @@ struct JourneyStripe: View {
                     case .walk(let walk):
                         Label("\(Int(walk.meters.rounded())) m", systemImage: "figure.walk")
                             .font(.figtree(.caption, weight: .semibold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.textSecondary)
                     case .ride(let ride):
                         Label(ride.hatName, systemImage: "bus.fill")
                             .font(.figtree(.caption, weight: .bold))
@@ -55,6 +71,8 @@ struct JourneyStripe: View {
                 }
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(journey.spokenLegs)
     }
 }
 
@@ -83,7 +101,7 @@ struct JourneyCard: View {
                     .font(.figtree(.headline, weight: .extraBold))
                 Text(journey.transfersLabel)
                     .font(.figtree(.subheadline))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.textSecondary)
                 Spacer()
                 Text(journey.feeLabel)
                     .font(.figtree(.subheadline, weight: .bold))
@@ -100,6 +118,14 @@ struct JourneyCard: View {
                     .offset(x: -12)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spokenLabel)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private var spokenLabel: String {
+        let parts = [journey.spokenSummary, journey.transfersLabel, journey.spokenLegs]
+        return (isRecommended ? ["Önerilen"] + parts : parts).joined(separator: ", ")
     }
 }
 
@@ -139,6 +165,7 @@ struct JourneyBanner: View {
     let model: MapModel
 
     @Environment(JourneySession.self) private var session
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -152,9 +179,10 @@ struct JourneyBanner: View {
                 HStack(alignment: .firstTextBaseline) {
                     Text(journey.summary)
                         .font(.figtree(.headline, weight: .extraBold))
+                        .accessibilityLabel(journey.spokenSummary)
                     Text(journey.transfersLabel)
                         .font(.figtree(.subheadline))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.textSecondary)
                     Spacer()
                     if model.journeyIndex == 0 {
                         Image(systemName: "star.fill")
@@ -163,7 +191,9 @@ struct JourneyBanner: View {
                     }
                 }
                 JourneyStripe(journey: journey)
-                HStack(spacing: 10) {
+                // Büyük yazı boyutlarında iki düğme yan yana sığmaz.
+                let layout = typeSize >= .xxLarge ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(spacing: 10))
+                layout {
                     Button {
                         model.isShowingSteps = true
                     } label: {
@@ -209,7 +239,8 @@ extension JourneyBanner {
                 .font(.figtree(.subheadline, weight: .semibold))
                 .accessibilityLabel("\(attributes.headline(for: state)), \(attributes.spokenDistance(for: state))")
             }
-            HStack(spacing: 10) {
+            let layout = typeSize >= .xxLarge ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(spacing: 10))
+            layout {
                 Button {
                     session.advance()
                 } label: {
@@ -262,6 +293,7 @@ struct JourneyStepsSheet: View {
                 } header: {
                     Text("\(journey.summary) · \(journey.transfersLabel)")
                         .font(.figtree(.subheadline, weight: .semibold))
+                        .accessibilityLabel("\(journey.spokenSummary), \(journey.transfersLabel)")
                 } footer: {
                     Text("Yürüme mesafeleri kuş uçuşu tahminidir; gerçek yaya yolu için Apple Haritalar'da aç.")
                 }
@@ -281,28 +313,32 @@ struct JourneyStepsSheet: View {
                 ? "Aktarma için \(meters) m yürü"
                 : offset == 0 ? "\(meters) m yürü — dolmuş durağına" : "Varışa \(meters) m yürü"
             HStack(alignment: .top, spacing: 12) {
-                stepIcon("figure.walk", color: .secondary)
+                stepIcon("figure.walk", color: .textSecondary)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.figtree(.subheadline, weight: .semibold))
                     Text(isTransfer ? "\(walk.toLabel) hattına" : walk.toLabel)
                         .font(.figtree(.footnote))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.textSecondary)
                     Button {
                         openInMaps(walk)
                     } label: {
                         Label("Haritalar'da aç", systemImage: "map")
                             .font(.figtree(.footnote, weight: .semibold))
+                            .frame(minHeight: 44, alignment: .leading)
+                            .contentShape(.rect)
                     }
                     .buttonStyle(.borderless)
+                    // Dokunma alanı 44 pt; satır yüksekliği değişmesin.
+                    .padding(.vertical, -12)
                     .padding(.top, 2)
                 }
             }
         case .ride(let ride):
-            let fee: String = switch (ride.feeMin, ride.feeMax) {
-            case let (min?, max?) where min != max: " · \(min)–\(max) ₺"
-            case let (min?, _): " · \(min) ₺"
-            default: ""
+            let fee: String? = switch (ride.feeMin, ride.feeMax) {
+            case let (min?, max?) where min != max: "\(min)–\(max) ₺"
+            case let (min?, _): "\(min) ₺"
+            default: nil
             }
             let kilometers = (ride.meters / 1000).formatted(.number.precision(.fractionLength(1)).locale(.turkish))
             HStack(alignment: .top, spacing: 12) {
@@ -310,9 +346,10 @@ struct JourneyStepsSheet: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(ride.hatName) dolmuşuna bin")
                         .font(.figtree(.subheadline, weight: .bold))
-                    Text("~\(kilometers) km · ~\(ride.minutes) dk\(fee)")
+                    Text("~\(kilometers) km · ~\(ride.minutes) dk\(fee.map { " · \($0)" } ?? "")")
                         .font(.figtree(.footnote))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.textSecondary)
+                        .accessibilityLabel("yaklaşık \(kilometers) kilometre, yaklaşık \(ride.minutes) dakika\(fee.map { ", \($0.spokenFee)" } ?? "")")
                 }
             }
         }
@@ -324,6 +361,7 @@ struct JourneyStepsSheet: View {
             .foregroundStyle(color)
             .frame(width: 32, height: 32)
             .background(color.opacity(0.14), in: .circle)
+            .accessibilityHidden(true)
     }
 
     /// Yürüme bacağını Apple Haritalar'da yaya yol tarifiyle açar (gerçek yaya

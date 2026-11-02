@@ -1,9 +1,12 @@
+import StoreKit
 import SwiftUI
 
 /// Uygulamanın kök sekmeleri; her sekme kendi navigation stack'ini taşır.
 /// Hatlar, tab bar'ın yanında ayrı bir search button olarak durur.
 struct MainTabView: View {
     @Environment(Router.self) private var router
+    @Environment(ReviewStore.self) private var review
+    @Environment(\.requestReview) private var requestReview
 
     var body: some View {
         @Bindable var router = router
@@ -31,6 +34,19 @@ struct MainTabView: View {
         // "Nereden → Nereye" her sekmeden açılabilir; sonuç Harita'da gösterilir.
         .sheet(item: $router.tripDraft) { draft in
             TripPlannerView(draft: draft)
+        }
+        // Yol tarifi görülüp haritadan çıkılırken değerlendirme istenebilir. İstek
+        // burada: `requestReview` her environment güncellemesinde "değişmiş" sayılıyor,
+        // haritada okununca bütün harita içeriği yeniden kuruluyordu.
+        .onChange(of: router.selectedTab) { old, _ in
+            if old == .map {
+                review.mapExited()
+            }
+        }
+        .onChange(of: review.isRequested) { _, isRequested in
+            guard isRequested else { return }
+            review.requestHandled()
+            requestReview()
         }
     }
 }

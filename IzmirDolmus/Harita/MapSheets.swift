@@ -9,6 +9,7 @@ struct CategorySheet: View {
 
     @Environment(DataStore.self) private var store
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     struct Category: Hashable {
         let title: String
@@ -34,7 +35,8 @@ struct CategorySheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 12)], spacing: 12) {
+                // Erişilebilirlik boyutlarında kutular genişler, adlar kesilmez.
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: typeSize.isAccessibilitySize ? 160 : 104), spacing: 12)], spacing: 12) {
                     ForEach(Self.categories, id: \.self) { category in
                         NavigationLink(value: category) {
                             VStack(spacing: 8) {
@@ -45,7 +47,7 @@ struct CategorySheet: View {
                                     .font(.figtree(.footnote, weight: .semibold))
                                     .foregroundStyle(Color.primary)
                                     .multilineTextAlignment(.center)
-                                    .lineLimit(2, reservesSpace: true)
+                                    .lineLimit(typeSize.isAccessibilitySize ? nil : 3)
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
@@ -60,7 +62,10 @@ struct CategorySheet: View {
             .navigationTitle("Önemli Noktalar")
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: Category.self) { category in
-                places(in: category)
+                CategoryPlacesView(category: category, center: center, data: store.data) { place in
+                    onPick(place)
+                    dismiss()
+                }
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -70,38 +75,60 @@ struct CategorySheet: View {
         }
     }
 
-    private func places(in category: Category) -> some View {
-        let places = store.data.placesInCategory(category.types, near: center)
-        return List(places, id: \.self) { place in
-            Button {
-                onPick(place)
-                dismiss()
-            } label: {
-                HStack {
-                    Label(place.label, systemImage: category.symbol)
-                        .foregroundStyle(Color.primary)
-                    Spacer()
-                    Text(Self.distanceLabel(center.meters(to: place.coordinate)))
-                        .font(.figtree(.footnote))
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
-                }
-            }
-        }
-        .overlay {
-            if places.isEmpty {
-                ContentUnavailableView("Bu türde kayıtlı yer bulunamadı", systemImage: category.symbol)
-            }
-        }
-        .navigationTitle(category.title)
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
     /// Flutter'daki gibi: 1 km altı metre, üstü bir ondalıklı km.
     static func distanceLabel(_ meters: Double) -> String {
         meters >= 1000
             ? "\((meters / 1000).formatted(.number.precision(.fractionLength(1)).locale(.turkish))) km"
             : "\(Int(meters.rounded())) m"
+    }
+}
+
+/// Bir türün yerleri, merkeze yakından uzağa. Liste bir kez ve ana aktörün dışında
+/// hesaplanır: 34 bin yerde tarama (release'de 5–15 ms) önceden her çizimde ana
+/// thread'de, açılışta birkaç kez yapılıyordu.
+private struct CategoryPlacesView: View {
+    let category: CategorySheet.Category
+    let center: Coordinate
+    let data: DolmusData
+    let onPick: (PlacePoint) -> Void
+
+    @State private var places: [PlacePoint]?
+
+    var body: some View {
+        List(places ?? [], id: \.self) { place in
+            let distance = CategorySheet.distanceLabel(center.meters(to: place.coordinate))
+            Button {
+                onPick(place)
+            } label: {
+                HStack {
+                    Label(place.label, systemImage: category.symbol)
+                        .foregroundStyle(Color.primary)
+                    Spacer()
+                    Text(distance)
+                        .font(.figtree(.footnote))
+                        .foregroundStyle(.textSecondary)
+                        .monospacedDigit()
+                }
+            }
+            .accessibilityLabel("\(place.label), \(distance.spokenDistance)")
+        }
+        .overlay {
+            if places == nil {
+                ProgressView()
+            } else if places?.isEmpty == true {
+                ContentUnavailableView("Bu türde kayıtlı yer bulunamadı", systemImage: category.symbol)
+            }
+        }
+        .navigationTitle(category.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .task {
+            places = await Self.places(category.types, near: center, in: data)
+        }
+    }
+
+    @concurrent
+    private static func places(_ types: Set<String>, near center: Coordinate, in data: DolmusData) async -> [PlacePoint] {
+        data.placesInCategory(types, near: center)
     }
 }
 
@@ -128,7 +155,7 @@ struct MapSearchSheet: View {
                         }
                     } else {
                         Text("Mahalle, cadde, durak ya da önemli bir yer adı yaz.")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.textSecondary)
                     }
                 } else {
                     ForEach(results, id: \.self) { place in

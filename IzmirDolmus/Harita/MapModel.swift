@@ -506,6 +506,11 @@ extension NearbyHat {
         Self.distanceLabel(meters)
     }
 
+    /// VoiceOver için: "Buca - Bornova, yaklaşık 350 metre, 40 ile 65 lira arası".
+    var spokenLabel: String {
+        "\(hat.name), \(distanceLabel.spokenDistance), \(hat.feeLabel.spokenFee)"
+    }
+
     static func distanceLabel(_ meters: Double) -> String {
         if meters < 950 {
             return "~\(Int((meters / 50).rounded()) * 50) m"

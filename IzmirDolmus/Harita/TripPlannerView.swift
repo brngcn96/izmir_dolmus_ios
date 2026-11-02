@@ -121,7 +121,8 @@ struct TripPlannerView: View {
     private func field(_ field: Field, text: Binding<String>, prompt: String, symbol: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: symbol)
-                .foregroundStyle(field == .from ? Color.secondary : Color.accent)
+                .foregroundStyle(field == .from ? Color.textSecondary : Color.accent)
+                .accessibilityHidden(true)
             TextField(prompt, text: text)
                 .focused($focus, equals: field)
                 .submitLabel(field == .from ? .next : .search)
@@ -139,14 +140,20 @@ struct TripPlannerView: View {
             Button {
                 Task { await useMyLocation(for: field) }
             } label: {
-                if location.isLocating {
-                    ProgressView()
-                } else {
-                    Image(systemName: "location.fill")
+                Group {
+                    if location.isLocating {
+                        ProgressView()
+                    } else {
+                        Image(systemName: "location.fill")
+                    }
                 }
+                .tapTarget()
             }
             .buttonStyle(.borderless)
-            .accessibilityLabel("Konumumu kullan")
+            // İki alanda da var: hangisi için olduğu da okunur.
+            .accessibilityLabel("\(prompt) için konumumu kullan")
+            // Dokunma alanı 44 pt; satır yüksekliği değişmesin.
+            .padding(.vertical, -8)
         }
     }
 

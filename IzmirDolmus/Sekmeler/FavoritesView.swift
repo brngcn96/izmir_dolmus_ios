@@ -24,6 +24,12 @@ struct FavoritesView: View {
                             user.toggleFavorite(hat.id)
                         }
                     }
+                    // VoiceOver'da basılı tutma menüsünün karşılığı.
+                    .accessibilityActions {
+                        Button("Favorilerden çıkar") {
+                            user.toggleFavorite(hat.id)
+                        }
+                    }
                 }
             }
             .padding()

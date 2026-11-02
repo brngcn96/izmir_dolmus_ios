@@ -29,7 +29,7 @@ final class FeedbackStore {
     private let defaults: UserDefaults
     private let client: APIClient
 
-    init(defaults: UserDefaults = .standard, client: APIClient = APIClient()) {
+    init(defaults: UserDefaults = AppEnvironment.defaults, client: APIClient = AppEnvironment.client) {
         self.defaults = defaults
         self.client = client
         self.feedbacks = defaults.codable([String: HatFeedback].self, forKey: Self.key) ?? [:]

@@ -29,7 +29,7 @@ struct HatListView: View {
                             Text(district.name)
                             Spacer()
                             Text("\(district.hats.count) hat")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.textSecondary)
                         }
                     }
                 }

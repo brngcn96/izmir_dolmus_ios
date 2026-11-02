@@ -45,12 +45,12 @@ struct HomeHeader: View {
                     .monospacedDigit()
                 Text("\(district) · \(weather.look.title)")
                     .font(.figtree(.footnote, weight: .medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.textSecondary)
                     .lineLimit(1)
             } else {
                 Text(district)
                     .font(.figtree(.footnote, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.textSecondary)
             }
         }
         .accessibilityElement(children: .combine)
@@ -66,7 +66,7 @@ struct SearchEntry: View {
             HStack {
                 Text("Konum veya adres ara")
                     .font(.figtree(.subheadline, weight: .medium))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.textSecondary)
                 Spacer()
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.accent)
@@ -104,7 +104,7 @@ struct ShortcutChip: View {
                         .foregroundStyle(.tertiary)
                 }
             }
-            .foregroundStyle(isSet ? Color.accent : Color.secondary)
+            .foregroundStyle(isSet ? Color.accent : Color.textSecondary)
             .padding(.horizontal, 12)
             .padding(.vertical, 7)
             .background(isSet ? Color.brandSoft : Color.surface, in: .rect(cornerRadius: Theme.Radius.chip))
@@ -137,7 +137,7 @@ struct EventsEntry: View {
                     .foregroundStyle(Color.primary)
                 Text(summary)
                     .font(.figtree(.footnote))
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(Color.textSecondary)
                     .multilineTextAlignment(.leading)
             }
             Spacer(minLength: 0)
@@ -173,20 +173,28 @@ struct NearbySection: View {
                     .font(.figtree(.title3, weight: .bold))
                     .accessibilityAddTraits(.isHeader)
                 Spacer()
+                // Dokunma alanı 44 pt; negatif boşluk başlık satırını büyütmesin diye.
                 if let surroundings = model.surroundings {
-                    Button("Tümünü gör") {
+                    Button {
                         onShow(surroundings.place)
+                    } label: {
+                        Text("Tümünü gör")
+                            .tapTarget()
                     }
                     .font(.figtree(.subheadline, weight: .semibold))
+                    .padding(.vertical, -10)
                 } else if case .failed = model.phase {
-                    Button("Yenile", systemImage: "arrow.clockwise", action: onRetry)
-                        .labelStyle(.iconOnly)
-                        .foregroundStyle(.secondary)
+                    Button(action: onRetry) {
+                        Image(systemName: "arrow.clockwise")
+                            .tapTarget()
+                    }
+                    .foregroundStyle(.textSecondary)
+                    .accessibilityLabel("Yenile")
+                    .padding(.vertical, -10)
                 }
             }
             VStack(spacing: 0) {
                 map
-                    .frame(height: 190)
                 if let surroundings = model.surroundings, !surroundings.nearby.isEmpty {
                     ForEach(Array(surroundings.nearby.enumerated()), id: \.element.id) { index, item in
                         if index > 0 {
@@ -198,6 +206,7 @@ struct NearbySection: View {
                             NearbyHatRow(item: item, color: Self.colors[index % Self.colors.count])
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel(item.spokenLabel)
                     }
                 }
             }
@@ -211,18 +220,24 @@ struct NearbySection: View {
         switch model.phase {
         case .idle, .locating:
             ProgressView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity)
+                .frame(height: 190)
                 .background(Color.brandSoft)
         case .failed(let error):
+            // Büyük yazı boyutlarında açıklama ve düğme sığsın diye yükseklik serbest.
             LocationUnavailable(error: error, onRetry: onRetry)
+                .frame(minHeight: 190)
         case .located(let surroundings):
-            NearbyMiniMap(surroundings: surroundings)
+            let miniMap = NearbyMiniMap(surroundings: surroundings)
+            miniMap
+                .frame(height: 190)
                 .contentShape(.rect)
                 .onTapGesture {
                     onShow(surroundings.place)
                 }
                 .accessibilityElement()
                 .accessibilityLabel("Yakındaki hatların haritası")
+                .accessibilityValue(miniMap.summary)
                 .accessibilityAddTraits(.isButton)
                 .accessibilityAction {
                     onShow(surroundings.place)
@@ -263,7 +278,7 @@ private struct NearbyMiniMap: View {
         .overlay(alignment: .bottomLeading) {
             Text(summary)
                 .font(.figtree(.caption, weight: .semibold))
-                .lineLimit(1)
+                .lineLimit(2)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(.regularMaterial, in: .rect(cornerRadius: 8))
@@ -271,7 +286,7 @@ private struct NearbyMiniMap: View {
         }
     }
 
-    private var summary: String {
+    var summary: String {
         surroundings.nearby.isEmpty
             ? "Yakında dolmuş hattı yok"
             : "\(surroundings.label) · \(surroundings.nearby.count) hat"
@@ -289,10 +304,10 @@ private struct LocationUnavailable: View {
         VStack(spacing: 10) {
             Image(systemName: "location.slash")
                 .font(.title)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.textSecondary)
             Text(error.homeMessage)
                 .font(.figtree(.footnote))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.textSecondary)
                 .multilineTextAlignment(.center)
             if error == .denied {
                 // İzin bir kez reddedilince sistem bir daha sormaz.
@@ -318,22 +333,30 @@ private struct NearbyHatRow: View {
     let item: NearbyHat
     let color: Color
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     var body: some View {
+        // Erişilebilirlik yazı boyutlarında ad, uzaklık ve ücret yan yana sığmaz.
+        let layout = typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+            : AnyLayout(HStackLayout(spacing: 10))
+
         HStack(spacing: 10) {
             Capsule()
                 .fill(color)
                 .frame(width: 4, height: 26)
-            Text(item.hat.name)
-                .font(.figtree(.subheadline, weight: .bold))
-                .lineLimit(1)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Text(item.distanceLabel)
-                .font(.figtree(.caption, weight: .medium))
-                .foregroundStyle(.secondary)
-            Text(item.hat.feeLabel)
-                .font(.figtree(.subheadline, weight: .bold))
-                .monospacedDigit()
-                .foregroundStyle(Color.fee(item.hat.feeMin))
+            layout {
+                Text(item.hat.name)
+                    .font(.figtree(.subheadline, weight: .bold))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(item.distanceLabel)
+                    .font(.figtree(.caption, weight: .medium))
+                    .foregroundStyle(.textSecondary)
+                Text(item.hat.feeLabel)
+                    .font(.figtree(.subheadline, weight: .bold))
+                    .monospacedDigit()
+                    .foregroundStyle(Color.fee(item.hat.feeMin))
+            }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -357,8 +380,12 @@ struct RecentsSection: View {
                     .font(.figtree(.title3, weight: .bold))
                     .accessibilityAddTraits(.isHeader)
                 Spacer()
-                Button("Temizle", action: onClear)
-                    .font(.figtree(.subheadline, weight: .semibold))
+                Button(action: onClear) {
+                    Text("Temizle")
+                        .tapTarget()
+                }
+                .font(.figtree(.subheadline, weight: .semibold))
+                .padding(.vertical, -10)
             }
             VStack(spacing: 0) {
                 ForEach(Array(places.enumerated()), id: \.element) { index, place in
@@ -375,7 +402,7 @@ struct RecentsSection: View {
                                 Text(place.label)
                                     .font(.figtree(.subheadline, weight: .bold))
                                     .foregroundStyle(Color.primary)
-                                    .lineLimit(1)
+                                    .lineLimit(2)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .contentShape(.rect)
@@ -386,9 +413,11 @@ struct RecentsSection: View {
                         } label: {
                             Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
                                 .font(.title3)
+                                .tapTarget()
                         }
                         .buttonStyle(.borderless)
-                        .accessibilityLabel("Buraya yol tarifi")
+                        .accessibilityLabel("\(place.label) için yol tarifi")
+                        .padding(.vertical, -8)
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 11)

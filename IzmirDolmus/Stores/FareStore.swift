@@ -30,8 +30,8 @@ final class FareStore {
     private var refreshTask: Task<Void, Never>?
 
     init(
-        client: APIClient = APIClient(),
-        cache: FileCache<FareTable> = FileCache(url: .applicationSupportDirectory.appending(path: "fares_v1.json"))
+        client: APIClient = AppEnvironment.client,
+        cache: FileCache<FareTable> = FileCache(url: AppEnvironment.cacheFile("fares_v1.json", in: .applicationSupportDirectory))
     ) {
         self.refresher = FareRefresher(client: client)
         self.cache = cache

@@ -25,12 +25,12 @@ struct OfflineNotice: View {
                 if let updatedAt {
                     Text("Kaydedilmiş liste gösteriliyor (\(updatedAt.turkishRelative)).")
                         .font(.figtree(.footnote))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.textSecondary)
                 }
             }
         } icon: {
             Image(systemName: "wifi.slash")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.textSecondary)
         }
     }
 }
@@ -135,6 +135,7 @@ private struct FilterChip: View {
         .padding(.vertical, 7)
         .foregroundStyle(isActive ? Color.white : Color.primary)
         .glassEffect(isActive ? .regular.tint(.accent).interactive() : .regular.interactive(), in: .capsule)
+        .accessibilityAddTraits(isActive ? .isSelected : [])
     }
 }
 
@@ -166,6 +167,7 @@ struct VenuePickerView: View {
                         }
                     }
                 }
+                .accessibilityAddTraits(selection.contains(venue) ? .isSelected : [])
             }
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Mekan ara")
             .navigationTitle("Mekan")

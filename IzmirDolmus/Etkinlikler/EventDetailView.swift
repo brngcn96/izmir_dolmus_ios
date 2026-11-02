@@ -28,6 +28,7 @@ struct EventDetailView: View {
                 banner
                 Text(event.title)
                     .font(.figtree(.title2, weight: .extraBold))
+                    .accessibilityAddTraits(.isHeader)
                 VStack(alignment: .leading, spacing: 10) {
                     if let date = event.longDateLabel {
                         info(date, systemImage: "calendar", isBold: true)
@@ -45,7 +46,7 @@ struct EventDetailView: View {
                 if let details = event.details {
                     Text(details)
                         .font(.figtree(.subheadline))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.textSecondary)
                 }
                 if let coordinate = event.coordinate {
                     let venue = PlacePoint(label: event.venue ?? event.title, coordinate: coordinate)
@@ -68,14 +69,14 @@ struct EventDetailView: View {
                 } else {
                     Text("Bu etkinlik için konum bilgisi bulunmuyor.")
                         .font(.figtree(.footnote))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.textSecondary)
                         .padding(12)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(Color.surface, in: .rect(cornerRadius: Theme.Radius.chip))
                 }
                 Text("Kaynak: \(event.sourceName)")
                     .font(.figtree(.caption))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.textSecondary)
             }
             .padding()
         }

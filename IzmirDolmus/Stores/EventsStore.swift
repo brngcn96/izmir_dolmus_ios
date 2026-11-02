@@ -33,8 +33,8 @@ final class EventsStore {
     private var refreshTask: Task<Void, Never>?
 
     init(
-        client: APIClient = APIClient(),
-        cache: FileCache<EventFeed> = FileCache(url: .cachesDirectory.appending(path: "events_v1.json"))
+        client: APIClient = AppEnvironment.client,
+        cache: FileCache<EventFeed> = FileCache(url: AppEnvironment.cacheFile("events_v1.json", in: .cachesDirectory))
     ) {
         self.client = client
         self.cache = cache

@@ -11,7 +11,7 @@ struct RootView: View {
     @Environment(JourneySession.self) private var journeySession
 
     /// Tanıtım görüldü mü (Flutter'daki `onboarding_done` bayrağıyla aynı ad).
-    @AppStorage("onboarding_done") private var isOnboardingDone = false
+    @AppStorage("onboarding_done", store: AppEnvironment.defaults) private var isOnboardingDone = false
     @State private var isSplashDone = false
     @State private var widgetSync = WidgetSync()
 

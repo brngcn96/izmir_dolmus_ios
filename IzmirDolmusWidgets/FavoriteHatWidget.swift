@@ -80,6 +80,7 @@ struct FavoriteHatView: View {
                 Text(hat.feeLabel)
                     .font(.system(.title3, design: .rounded, weight: .heavy))
                     .foregroundStyle(Color.fee(hat.feeMin))
+                    .accessibilityLabel(hat.feeLabel.spokenFee)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .widgetURL(DeepLink.hat(id: hat.id).url)
@@ -114,6 +115,7 @@ struct FavoriteHatView: View {
                                 .foregroundStyle(Color.fee(hat.feeMin))
                         }
                     }
+                    .accessibilityLabel("\(hat.name), \(hat.feeLabel.spokenFee)")
                 }
                 Spacer(minLength: 0)
             }

@@ -33,13 +33,14 @@ struct SplashView: View {
                         // Görselin üstü ve altı saydam: yazıyı dolmuşa yaklaştır.
                         .padding(.vertical, -min(width * 0.72, 420) * 0.2)
                         .offset(x: frame.busOffset * width)
+                        .accessibilityHidden(true)
                     VStack(spacing: 6) {
                         Text("İzmir Dolmuş")
                             .font(.figtree(.title, weight: .extraBold))
                             .kerning(-0.5)
                         Text("Hatlar, güzergah ve yol tarifi")
                             .font(.figtree(.footnote, weight: .medium))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.textSecondary)
                     }
                     .opacity(frame.textOpacity)
                     .offset(y: frame.textOffset)
@@ -67,7 +68,7 @@ struct SplashView: View {
                 ProgressView()
                 Text("Yükleniyor…")
                     .font(.figtree(.footnote, weight: .medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.textSecondary)
             }
             .padding(.bottom, 44)
             .opacity(isShowingProgress ? 1 : 0)

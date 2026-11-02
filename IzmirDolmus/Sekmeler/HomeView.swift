@@ -107,17 +107,26 @@ struct HomeView: View {
             }
         }
         .contextMenu {
-            Button {
-                editingPlace = kind
+            placeActions(kind, place: place)
+        }
+        // VoiceOver'da basılı tutma menüsünün aynı seçenekleri.
+        .accessibilityActions {
+            placeActions(kind, place: place)
+        }
+    }
+
+    @ViewBuilder
+    private func placeActions(_ kind: SavedPlaceKind, place: PlacePoint?) -> some View {
+        Button {
+            editingPlace = kind
+        } label: {
+            Label(place == nil ? "Adres ekle" : "Adresi değiştir", systemImage: "pencil")
+        }
+        if place != nil {
+            Button(role: .destructive) {
+                binding(for: kind).wrappedValue = nil
             } label: {
-                Label(place == nil ? "Adres ekle" : "Adresi değiştir", systemImage: "pencil")
-            }
-            if place != nil {
-                Button(role: .destructive) {
-                    binding(for: kind).wrappedValue = nil
-                } label: {
-                    Label("Kaldır", systemImage: "trash")
-                }
+                Label("Kaldır", systemImage: "trash")
             }
         }
     }

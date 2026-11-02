@@ -57,7 +57,7 @@ final class JourneySession {
     /// Ekranda değişiklik olmasa da bu aralıkla güncellenir: kart bayatlamasın.
     static let heartbeat: TimeInterval = 3 * 60
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = AppEnvironment.defaults) {
         self.defaults = defaults
         // Live Activity düğmeleri (`LiveActivityIntent`) uygulamanın sürecinde çalışır ve buraya gelir.
         JourneyActions.shared.advance = { [weak self] in self?.advance() }

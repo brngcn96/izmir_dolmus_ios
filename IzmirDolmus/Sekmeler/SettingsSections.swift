@@ -9,7 +9,7 @@ struct RecentPlacesSection: View {
         Section("Son aramalar") {
             if user.recentPlaces.isEmpty {
                 Text("Henüz arama yok.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.textSecondary)
             } else {
                 ForEach(user.recentPlaces, id: \.self) { place in
                     Label(place.label, systemImage: "clock.arrow.circlepath")

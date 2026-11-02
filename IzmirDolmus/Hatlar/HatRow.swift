@@ -31,8 +31,8 @@ struct HatRow: View {
                 if !subtitle.isEmpty {
                     Text(subtitle)
                         .font(.figtree(.subheadline))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .foregroundStyle(.textSecondary)
+                        .lineLimit(typeSize.isAccessibilitySize ? nil : 1)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -41,6 +41,21 @@ struct HatRow: View {
                 .monospacedDigit()
                 .foregroundStyle(Color.fee(hat.feeMin))
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spokenLabel)
+    }
+
+    /// "Buca - Bornova, favori, Buca, Bornova, 4 ücret bölgesi, 40 ile 65 lira arası".
+    private var spokenLabel: String {
+        var parts = [hat.name]
+        if showsFavoriteMark && user.isFavorite(hat.id) {
+            parts.append("favori")
+        }
+        if !subtitle.isEmpty {
+            parts.append(subtitle.replacing(" · ", with: ", ").replacing(" / ", with: ", "))
+        }
+        parts.append(hat.feeLabel.spokenFee)
+        return parts.joined(separator: ", ")
     }
 
     /// "Bornova / Buca · 4 ücret bölgesi". Ücret satırı olmayan hatta yalnızca ilçe.

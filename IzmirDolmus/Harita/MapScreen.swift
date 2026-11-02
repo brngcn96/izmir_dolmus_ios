@@ -1,4 +1,5 @@
 import DolmusCore
+import Accessibility
 import MapKit
 import SwiftUI
 
@@ -8,6 +9,7 @@ struct MapScreen: View {
     @Environment(DataStore.self) private var store
     @Environment(Router.self) private var router
     @Environment(UserStore.self) private var user
+    @Environment(ReviewStore.self) private var review
 
     @State private var model = MapModel()
     @State private var location = LocationProvider()
@@ -77,7 +79,9 @@ struct MapScreen: View {
         }
         // Mesaj birkaç saniye sonra kendiliğinden kalkar.
         .task(id: model.message) {
-            guard model.message != nil else { return }
+            guard let message = model.message else { return }
+            // Kart kendiliğinden kalkar; VoiceOver kullanıcısına okunur.
+            AccessibilityNotification.Announcement(message).post()
             try? await Task.sleep(for: .seconds(7))
             withAnimation { model.message = nil }
         }
@@ -109,7 +113,12 @@ struct MapScreen: View {
             case .journey(let journey, let from, let to):
                 model.showJourney(journey, from: from, to: to)
             case .trip(let from, let to):
-                Task { await model.startTrip(from: from, to: to, data: store.data) }
+                Task {
+                    await model.startTrip(from: from, to: to, data: store.data)
+                    if model.selectedJourney != nil {
+                        review.noteSuccessfulTrip()
+                    }
+                }
             }
         }
     }
@@ -135,11 +144,14 @@ struct MapScreen: View {
         }
         ForEach(model.pois) { poi in
             Annotation(poi.label, coordinate: poi.coordinate.clCoordinate, anchor: poi.type == "mahalle" ? .center : .top) {
-                PoiMarker(poi: poi, isLabeled: model.isLabeled(poi))
+                let marker = PoiMarker(poi: poi, isLabeled: model.isLabeled(poi))
+                marker
                     .onTapGesture {
-                        let marker = PoiMarker(poi: poi, isLabeled: true)
                         model.setProbe(poi.coordinate, label: marker.name, data: store.data)
                     }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(marker.name)
+                    .accessibilityAddTraits(.isButton)
             }
             .annotationTitles(.hidden)
         }
@@ -234,12 +246,13 @@ struct MapScreen: View {
                                     .lineLimit(1)
                                 Spacer(minLength: 4)
                                 Image(systemName: "pencil")
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.textSecondary)
                             }
                             .padding(.horizontal, 16)
                             .frame(height: 48)
                         }
                         .glassEffect(.regular.interactive(), in: .capsule)
+                        .accessibilityLabel("Nereden \(from.label), nereye \(to.label)")
                         .accessibilityHint("Noktaları değiştir")
                     } else if model.hat == nil {
                         Button {
@@ -251,7 +264,7 @@ struct MapScreen: View {
                                     .font(.figtree(.body))
                                 Spacer()
                             }
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.textSecondary)
                             .padding(.horizontal, 16)
                             .frame(height: 48)
                         }
@@ -300,6 +313,8 @@ struct MapScreen: View {
         }
         .padding(.horizontal, 12)
         .padding(.top, 4)
+        // Haritanın üstünde yüzer: yazı sınırsız büyürse haritayı kaplar.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 
     private func chip(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
@@ -339,6 +354,7 @@ struct MapScreen: View {
             }
         }
         .padding(.bottom, 8)
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
     }
 
     // MARK: Eylemler
@@ -350,6 +366,7 @@ struct MapScreen: View {
             router.mapReturnTab = nil
             router.selectedTab = tab
         }
+        review.mapExited()
     }
 
     private func locate() async {

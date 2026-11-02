@@ -54,9 +54,10 @@ daraldığı için Faz 5'ten itibaren düzen değişti. Türkçe konuş.
 cd DolmusCore && swift test
 cd DolmusCore && swift test --filter DataLoaderTests   # tek süit
 
-# Aynı testler Xcode şemasından (simülatörde); Xcode'da ⌘U
+# Şemanın bütün testleri (paket + UI testleri, simülatörde); Xcode'da ⌘U
 xcodebuild test -project IzmirDolmus.xcodeproj -scheme IzmirDolmus \
   -destination 'platform=iOS Simulator,name=iPhone 17'
+# Yalnızca biri: -only-testing:DolmusCoreTests ya da -only-testing:IzmirDolmusUITests
 
 # Uygulamayı simülatör için derle
 xcodebuild -project IzmirDolmus.xcodeproj -scheme IzmirDolmus \
@@ -72,6 +73,19 @@ Scripts/export-golden.sh        # varsayılan kaynak: ../izmir_dolmus
 
 Arayüze bakmak için: `xcrun simctl boot`, `install`, `launch`, ardından
 `xcrun simctl io <udid> screenshot`. İş bitince uygulamayı kaldır ve simülatörü kapat.
+
+## UI testleri
+
+`IzmirDolmusUITests` uygulamayı `-uiTesting` ile açar (yalnızca Debug, bkz.
+`AppEnvironment`): ağ istekleri hazır cevaplarla döner (İBB, GitHub, Open-Meteo,
+Google Form'a gidilmez), ayarlar her açılışta silinen ayrı bir alanda, önbellekler
+geçici klasörde. Simülatördeki asıl veri değişmez; yeniden açılışı deneyen test
+`-uiTestingKeepData` ile test alanını bırakır. Başlangıç değerleri argüman
+alanından verilir (`-onboarding_done YES`); argüman alanı uygulamanın yazdığının
+önüne geçer, uygulamanın değiştireceği bir değeri böyle sabitleme.
+`AccessibilityAuditTests` Apple'ın erişilebilirlik denetimini ana ekranlarda varsayılan
+ve en büyük yazı boyutunda koşar; sistem bileşenlerinden gelen bilinen sorunlar
+testteki listede gerekçesiyle durur.
 
 ## API doğrulama
 

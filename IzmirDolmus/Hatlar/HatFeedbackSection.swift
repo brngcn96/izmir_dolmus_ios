@@ -1,3 +1,4 @@
+import Accessibility
 import DolmusCore
 import SwiftUI
 
@@ -43,7 +44,7 @@ struct HatFeedbackSection: View {
                 }
                 // List'te devre dışı button siyah çiziliyor; gri olsun ki
                 // dokunulabilir sanılmasın.
-                .foregroundStyle(canSend ? Color.accent : Color.secondary)
+                .foregroundStyle(canSend ? Color.accent : Color.textSecondary)
             }
             .disabled(!canSend)
         } header: {
@@ -55,6 +56,17 @@ struct HatFeedbackSection: View {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button("Bitti") { isEditingNote = false }
+            }
+        }
+        // Sonuç listenin altında kalabilir: VoiceOver kullanıcısına okunur.
+        .onChange(of: state) { _, state in
+            switch state {
+            case .sent:
+                AccessibilityNotification.Announcement("Geri bildirimin gönderildi. Teşekkürler!").post()
+            case .failed(let message):
+                AccessibilityNotification.Announcement("Gönderilemedi: \(message)").post()
+            case .idle, .sending:
+                break
             }
         }
     }
@@ -91,16 +103,16 @@ private struct VoteRow: View {
             Label(title, systemImage: systemImage)
                 .frame(maxWidth: .infinity, alignment: .leading)
             HStack(spacing: 8) {
-                voteButton(true, title: "Evet", systemImage: "hand.thumbsup")
-                voteButton(false, title: "Hayır", systemImage: "hand.thumbsdown")
+                voteButton(true, answer: "Evet", systemImage: "hand.thumbsup")
+                voteButton(false, answer: "Hayır", systemImage: "hand.thumbsdown")
             }
         }
     }
 
-    private func voteButton(_ answer: Bool, title: String, systemImage: String) -> some View {
-        let isSelected = vote == answer
+    private func voteButton(_ value: Bool, answer: String, systemImage: String) -> some View {
+        let isSelected = vote == value
         return Button {
-            onVote(answer)
+            onVote(value)
         } label: {
             Image(systemName: isSelected ? "\(systemImage).fill" : systemImage)
                 .font(.title3)
@@ -111,7 +123,8 @@ private struct VoteRow: View {
         // List satırında button'lar ayrı ayrı dokunulsun diye; yoksa bütün
         // satır tek bir button gibi davranır.
         .buttonStyle(.borderless)
-        .accessibilityLabel(title)
+        // İki soruda da "Evet" var: hangisine ait olduğu da okunur.
+        .accessibilityLabel("\(title) \(answer)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
