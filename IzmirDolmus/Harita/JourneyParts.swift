@@ -138,6 +138,8 @@ struct JourneyListSheet: View {
 struct JourneyBanner: View {
     let model: MapModel
 
+    @Environment(JourneySession.self) private var session
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if model.isPlanning {
@@ -182,11 +184,56 @@ struct JourneyBanner: View {
                         .glassEffect(.regular.interactive(), in: .capsule)
                     }
                 }
+                journeyModeControls(journey)
             }
         }
         .padding(16)
         .glassEffect(.regular, in: .rect(cornerRadius: Theme.Radius.sheet))
         .padding(.horizontal, 12)
+    }
+}
+
+extension JourneyBanner {
+    /// Yolculuk modu: başlat; sürerken sıradaki adım ve bitir.
+    @ViewBuilder
+    private func journeyModeControls(_ journey: Journey) -> some View {
+        if session.isActive {
+            HStack(spacing: 10) {
+                Button {
+                    Task { await session.advance() }
+                } label: {
+                    Label("Sonraki adım", systemImage: "forward.fill")
+                        .font(.figtree(.subheadline, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.primary)
+                Button(role: .destructive) {
+                    Task { await session.end() }
+                } label: {
+                    Label("Bitir", systemImage: "stop.fill")
+                        .font(.figtree(.subheadline, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                }
+                .glassEffect(.regular.interactive(), in: .capsule)
+            }
+        } else {
+            Button {
+                if let from = model.tripFrom, let to = model.tripTo {
+                    session.start(journey: journey, from: from, to: to)
+                }
+            } label: {
+                Label("Yolculuğu başlat", systemImage: "location.north.line.fill")
+                    .font(.figtree(.subheadline, weight: .semibold))
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.primary)
+        }
+        if let message = session.errorMessage {
+            Text(message)
+                .font(.figtree(.footnote))
+                .foregroundStyle(.red)
+        }
     }
 }
 

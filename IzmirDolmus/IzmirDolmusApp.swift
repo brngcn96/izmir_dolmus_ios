@@ -8,6 +8,7 @@ struct IzmirDolmusApp: App {
     @State private var fares = FareStore()
     @State private var events = EventsStore()
     @State private var feedback = FeedbackStore()
+    @State private var journeySession = JourneySession()
 
     var body: some Scene {
         WindowGroup {
@@ -18,6 +19,7 @@ struct IzmirDolmusApp: App {
                 .environment(fares)
                 .environment(events)
                 .environment(feedback)
+                .environment(journeySession)
         }
     }
 }

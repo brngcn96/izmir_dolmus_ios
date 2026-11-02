@@ -27,6 +27,8 @@ daraldığı için Faz 5'ten itibaren düzen değişti. Türkçe konuş.
   test eder, doğrularsın. Altyapıyı (çekirdek modeller ve testleri, derin bağlantılar,
   doğrulama) sen yazarsın. Konu anlatımı parçalarla birlikte o anda yapılır.
   Yolculuk modunda acele yok, hazırlık titiz olmalı.
+- **Güncelleme, 2026-11-02:** kullanıcı hızlanmak istedi: denemeleri ve Faz Y'nin
+  kalanını (Y3–Y4) sen yaparsın; konu anlatımı faz sonunda, koddan alıntılarla verilir.
 
 ## Yapı
 

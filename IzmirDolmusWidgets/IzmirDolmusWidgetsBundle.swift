@@ -15,7 +15,6 @@ struct IzmirDolmusWidgetsBundle: WidgetBundle {
         FavoriteHatWidget()
         TripPlannerControl()
         GoHomeControl()
-        // Şablonun Live Activity'si; Faz Y'de Yolculuk modu bunun yerine gelecek.
-        IzmirDolmusWidgetsLiveActivity()
+        JourneyLiveActivity()
     }
 }

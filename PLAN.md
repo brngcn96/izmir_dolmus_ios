@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-10-29): Faz 0–7 ve Faz W bitti · sırada Faz Y (Yolculuk modu, interaktif), sonra Faz 8 · çalışma düzeni (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-11-02): Faz 0–7 ve Faz W bitti · Faz Y'de Y1–Y2 bitti, Y3–Y4 sürüyor · Faz 8 `phase-8` dalında sürüyor · çalışma düzeni (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -702,6 +702,35 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
   - SY.9 (S) `LiveActivityIntent` düğmeleri.
   - SY.10 (B+S) simülatörde rota benzetimiyle uçtan uca deneme. Gerçek cihazda
     yürüyüş ve dolmuş denemesi sende.
+- **Adımlar ve ilerleme (2026-10-31):** kodu sen ekliyorsun, yapılandırmayı ben yapıyorum;
+  kod önce bende derlenip simülatörde denenir, sonra verilir.
+  - [x] **Y1:** Live Activity iskeleti (SY.3–SY.6'nın elle ilerleyen hali): başlat,
+    sonraki adım, bitir; kilit ekranı ve Dynamic Island. Eklendi; derleniyor ve
+    simülatörde çalışıyor, commit edilmedi. Senin denemen sürüyor.
+  - [x] **Y2 (SY.2):** `JourneyTracker` (`DolmusCore/Trip`) ve sentetik iz testleri
+    repoda; 8 test geçiyor, bilerek yapılan yedi bozma yakalandı.
+  - [ ] **Y3 (SY.7, SY.8):** arka planda konumla kendiliğinden ilerleme, inişe
+    yaklaşınca uyarı.
+  - [ ] **Y4 (SY.9):** Live Activity düğmeleri, yeniden açılışta sürdürme, uç durumlar.
+- **Deneme (2026-11-02, kullanıcının isteğiyle Claude yaptı):** iPhone 18 Pro simülatöründe
+  UI testiyle: kompakt ve genişletilmiş ada, kilit ekranı kartı (gerçek kilitle de),
+  her adımda güncelleme, varış, varmadan "Bitir" (kart hemen kalkıyor), arka plan →
+  ön plan → bildirim merkezi → harita. Kullanıcının bildirdiği "donma" bizden değil:
+  kayıtlarda SpringBoard'un üst kenar hareketi (`_UIExclusiveTouchGestureRecognizer:
+  Changed`) bitmeden kalmış, dokunuşları o tutuyordu; uygulamanın ana thread'i boştaydı.
+- **Bulgular (Y1):**
+  - Uygulama kapanıp yeniden açılınca (Xcode'un her ⌘R'ı da) `JourneySession` süren
+    etkinliği unutuyor: eski kart kilit ekranında güncellenmeden kalıyor, yeni yolculuk
+    ikinci bir kart açıyor. Varıştan sonra beş dakika kalan "Vardın" kartı da yeni
+    yolculuğun kartının üstüne biniyor. Y4'te (yeniden açılışta sürdürme) çözülecek.
+  - Uygulama yeni kurulduğunda sistem eklentiyi birkaç saniye tanımıyor
+    (`chronod`: "Ignoring restricted or unknown extension"). O sırada başlatılan
+    etkinlik oluşuyor ama çizilmiyor.
+  - Yeni kurulumda ilk etkinliğin altında sistem "Allow Live Activities from …?"
+    diye soruyor.
+  - `Activity` `Sendable` değil, `update`/`end` ana aktörde çalışmıyor; Swift 6
+    "sending 'activity' risks causing data races" hatası veriyor. Etkinlik kimlikle
+    tutulup `@concurrent` fonksiyonda `Activity.activities`'ten yeniden bulunuyor.
 - **Riskler:**
   - GPS doğruluğu (şehir içi, kapalı alan).
   - Dolmuşun güzergahtan sapması.
