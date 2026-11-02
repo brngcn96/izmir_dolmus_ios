@@ -21,7 +21,7 @@ public enum TripConstants {
 }
 
 /// Bir yürüme bacağı: başlangıçtan durağa, aktarmada, durağa varıştan hedefe.
-public struct WalkLeg: Sendable, Equatable {
+public struct WalkLeg: Sendable, Equatable, Codable {
     public let from: Coordinate
     public let to: Coordinate
     /// Planlama sırasındaki kuş uçuşu tahmin (m).
@@ -41,7 +41,7 @@ public struct WalkLeg: Sendable, Equatable {
 }
 
 /// Bir dolmuş bacağı: hatta biniş, güzergah boyunca iniş.
-public struct RideLeg: Sendable, Equatable {
+public struct RideLeg: Sendable, Equatable, Codable {
     public let hatID: String
     public let hatName: String
     /// `geoms(for:)` içindeki güzergahın sırası.
@@ -60,13 +60,14 @@ public struct RideLeg: Sendable, Equatable {
     }
 }
 
-public enum JourneyLeg: Sendable, Equatable {
+public enum JourneyLeg: Sendable, Equatable, Codable {
     case walk(WalkLeg)
     case ride(RideLeg)
 }
 
 /// Bir yol tarifi seçeneği: yürü → bin → (aktar → bin →) in → yürü.
-public struct Journey: Sendable, Equatable, Identifiable {
+/// `Codable`: süren yolculuk cihazda saklanır (yeniden açılışta sürdürmek için).
+public struct Journey: Sendable, Equatable, Identifiable, Codable {
     public internal(set) var legs: [JourneyLeg]
 
     public init(legs: [JourneyLeg]) {

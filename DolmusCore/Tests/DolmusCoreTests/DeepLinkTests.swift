@@ -6,7 +6,7 @@ import Testing
 @Suite struct DeepLinkTests {
     @Test("Adres gidip gelir", arguments: [
         DeepLink.commute(.toWork), .commute(.toHome), .hat(id: "M19"), .hat(id: "M35#toki"),
-        .tripPlanner, .goHome, .settings,
+        .tripPlanner, .goHome, .settings, .journey,
     ])
     func roundTrip(link: DeepLink) {
         #expect(DeepLink(url: link.url) == link, "\(link.url)")

@@ -7,6 +7,8 @@ enum MapRequest: Equatable {
     case hat(id: String)
     case place(PlacePoint)
     case trip(from: PlacePoint, to: PlacePoint)
+    /// Süren yolculuğun tarifi; yeniden planlanmaz (seçilen seçenek kalır).
+    case journey(Journey, from: PlacePoint, to: PlacePoint)
 }
 
 /// "Nereden → Nereye" sayfasının başlangıç değerleri.
@@ -62,9 +64,9 @@ final class Router {
 }
 
 extension Router {
-    /// Uygulama dışından gelen adresi gösterir: widget'a dokunuş (`onOpenURL`)
-    /// ya da Control Center kontrolü (`PendingDeepLink`).
-    func open(_ link: DeepLink, home: PlacePoint?, work: PlacePoint?) {
+    /// Uygulama dışından gelen adresi gösterir: widget'a ya da Live Activity'ye
+    /// dokunuş (`onOpenURL`) veya Control Center kontrolü (`PendingDeepLink`).
+    func open(_ link: DeepLink, home: PlacePoint?, work: PlacePoint?, journey: SavedJourney? = nil) {
         switch link {
         case .commute(let direction):
             let from = direction == .toWork ? home : work
@@ -83,6 +85,10 @@ extension Router {
         case .settings:
             self[.settings] = []
             selectedTab = .settings
+        case .journey:
+            if let journey {
+                showOnMap(.journey(journey.journey, from: journey.from, to: journey.to))
+            }
         }
     }
 }

@@ -194,13 +194,24 @@ struct JourneyBanner: View {
 }
 
 extension JourneyBanner {
-    /// Yolculuk modu: başlat; sürerken sıradaki adım ve bitir.
+    /// Yolculuk modu: başlat; sürerken o anki adım, sıradaki adım ve bitir.
     @ViewBuilder
     private func journeyModeControls(_ journey: Journey) -> some View {
         if session.isActive {
+            if let attributes = session.attributes, let state = session.state {
+                // Kartla aynı cümle: Canlı Etkinlikler kapalıysa ilerleme burada görünür.
+                Label {
+                    Text("\(attributes.headline(for: state)) · \(attributes.distanceText(for: state))")
+                } icon: {
+                    Image(systemName: attributes.step(for: state)?.kind == .ride ? "bus.fill" : "figure.walk")
+                        .foregroundStyle(.accent)
+                }
+                .font(.figtree(.subheadline, weight: .semibold))
+                .accessibilityLabel("\(attributes.headline(for: state)), \(attributes.spokenDistance(for: state))")
+            }
             HStack(spacing: 10) {
                 Button {
-                    Task { await session.advance() }
+                    session.advance()
                 } label: {
                     Label("Sonraki adım", systemImage: "forward.fill")
                         .font(.figtree(.subheadline, weight: .semibold))
@@ -208,7 +219,7 @@ extension JourneyBanner {
                 }
                 .buttonStyle(.primary)
                 Button(role: .destructive) {
-                    Task { await session.end() }
+                    session.end()
                 } label: {
                     Label("Bitir", systemImage: "stop.fill")
                         .font(.figtree(.subheadline, weight: .semibold))

@@ -224,6 +224,25 @@ import Testing
         #expect(abs(Double(tracker.progress.metersRemaining) - line.length * 0.3) < 5, "\(tracker.progress.metersRemaining) / \(line.length)")
     }
 
+    @Test("Kayıttan sürdürme: aynı bacaktan, planlanan mesafeyle")
+    func resumesAtLeg() async throws {
+        let journey = try #require(try await Self.journeys(from: "bornova metro", to: "şirinyer").first { $0.rides.count == 1 })
+        let tracker = JourneyTracker(journey: journey, legIndex: 1)
+        #expect(tracker.progress.legIndex == 1)
+        guard case .ride(let ride) = journey.legs[1] else { Issue.record("ikinci bacak dolmuş değil"); return }
+        #expect(tracker.progress.metersRemaining == Int(ride.meters.rounded()))
+        // Sınır dışı bacak son bacağa kırpılır; varılmış sayılmaz.
+        let clamped = JourneyTracker(journey: journey, legIndex: 99)
+        #expect(clamped.progress.legIndex == journey.legs.count - 1 && !clamped.progress.hasArrived)
+    }
+
+    @Test("Tarif saklanıp geri okununca aynı")
+    func journeyCodableRoundTrip() async throws {
+        let journey = try #require(try await Self.journeys(from: "konak", to: "bornova metro").first)
+        let data = try JSONEncoder().encode(journey)
+        #expect(try JSONDecoder().decode(Journey.self, from: data) == journey)
+    }
+
     @Test("Gidip dönen güzergah: konum öbür uca sıçramaz")
     func loopingRouteStaysLocal() {
         // 2 km kuzeye, 100 m doğuya, 2 km güneye: başlangıcın yanından geri geçen bir güzergah.

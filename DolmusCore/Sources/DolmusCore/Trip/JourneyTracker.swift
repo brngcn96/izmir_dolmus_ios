@@ -86,6 +86,14 @@ public struct JourneyTracker: Sendable {
         prepareLeg()
     }
 
+    /// Kayıttan sürdürürken: doğrudan `legIndex`. bacaktan başlar (olay üretmez).
+    public init(journey: Journey, legIndex: Int) {
+        self.init(journey: journey)
+        for _ in 0..<min(max(legIndex, 0), journey.legs.count - 1) {
+            _ = advanceManually()
+        }
+    }
+
     /// Yeni bir ölçümü işler; olan bitenleri sırasıyla döndürür.
     public mutating func update(with fix: LocationFix) -> [JourneyEvent] {
         guard !progress.hasArrived, fix.accuracy >= 0, fix.accuracy <= Self.maxAccuracy else { return [] }

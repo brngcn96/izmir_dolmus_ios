@@ -13,6 +13,8 @@ public enum DeepLink: Equatable, Sendable {
     case goHome
     /// Ayarlar (Ev ve İş adresleri orada).
     case settings
+    /// Süren yolculuk, haritada (Live Activity'ye dokununca).
+    case journey
 
     public static let scheme = "izmirdolmus"
 
@@ -34,6 +36,8 @@ public enum DeepLink: Equatable, Sendable {
             self = query("to") == "home" ? .goHome : .tripPlanner
         case "settings":
             self = .settings
+        case "journey":
+            self = .journey
         default:
             return nil
         }
@@ -56,6 +60,8 @@ public enum DeepLink: Equatable, Sendable {
             components.queryItems = [URLQueryItem(name: "to", value: "home")]
         case .settings:
             components.host = "settings"
+        case .journey:
+            components.host = "journey"
         }
         return components.url!
     }

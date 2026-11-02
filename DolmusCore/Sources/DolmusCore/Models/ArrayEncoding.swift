@@ -2,6 +2,14 @@
 // `["Konak · Konak", 38.41622, 27.12632]` olarak yazılır. Böylece veri
 // dosyasından okunan ve cihazda saklanan yer aynı biçimi paylaşır.
 
+extension Coordinate: Encodable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(latitude)
+        try container.encode(longitude)
+    }
+}
+
 extension PlacePoint: Encodable {
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.unkeyedContainer()

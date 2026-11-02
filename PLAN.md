@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-11-02): Faz 0–7 ve Faz W bitti · Faz Y'de Y1–Y2 bitti, Y3–Y4 sürüyor · Faz 8 `phase-8` dalında sürüyor · çalışma düzeni (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-11-02): Faz 0–7, Faz W ve Faz Y bitti · Faz 8 `phase-8` dalında sürüyor · çalışma düzeni (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -645,7 +645,7 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
   - dokunuşlar doğru ekrana gider;
   - favori ya da Ev/İş değişince widget kendiliğinden tazelenir.
 
-### [ ] Faz Y — Yolculuk modu (Live Activity, interaktif, acele yok, ~8-12 saat)
+### [x] Faz Y — Yolculuk modu (Live Activity, interaktif, acele yok, ~8-12 saat)
 - **Fikir:** seçilen tarif "Yolculuğu başlat" ile canlı takip edilir. Kilit ekranında
   ve Dynamic Island'da o anki adım görünür: "Durağa yürü · 210 m" → "Bornova–Altındağ'a
   bin" → "İnişe 2,3 km" → "Sıradaki durakta in" → "Aktarma" → "Vardın". İnişe
@@ -706,23 +706,43 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
   kod önce bende derlenip simülatörde denenir, sonra verilir.
   - [x] **Y1:** Live Activity iskeleti (SY.3–SY.6'nın elle ilerleyen hali): başlat,
     sonraki adım, bitir; kilit ekranı ve Dynamic Island. Eklendi; derleniyor ve
-    simülatörde çalışıyor, commit edilmedi. Senin denemen sürüyor.
+    simülatörde çalışıyor.
   - [x] **Y2 (SY.2):** `JourneyTracker` (`DolmusCore/Trip`) ve sentetik iz testleri
     repoda; 8 test geçiyor, bilerek yapılan yedi bozma yakalandı.
-  - [ ] **Y3 (SY.7, SY.8):** arka planda konumla kendiliğinden ilerleme, inişe
-    yaklaşınca uyarı.
-  - [ ] **Y4 (SY.9):** Live Activity düğmeleri, yeniden açılışta sürdürme, uç durumlar.
+  - [x] **Y3 (SY.7, SY.8, Claude, 2026-11-02):** `JourneySession` konumu
+    `CLLocationUpdate.liveUpdates(.otherNavigation)` ile dinler; `CLBackgroundActivitySession`
+    açık kaldıkça "kullanırken" izniyle arka planda da gelir (`UIBackgroundModes`:
+    `location`). Ölçümler `JourneyTracker`'a gider; kart yalnızca ekranda görünen bir şey
+    değişince (adım, uyarı, 10 m'lik mesafe adımı) ya da 3 dakikada bir güncellenir.
+    Uyarılar `AlertConfiguration` ile: durağa gelince, inişe ~400 m ve ~150 m kala,
+    güzergahtan çıkınca, varınca. Kart 5 dakika güncellenmezse "Konum güncellenmiyor"
+    (`staleDate`). Varınca konum kapanır, "Vardın" kartı 5 dakika kalır. Canlı Etkinlikler
+    kapalıysa uyarılar yerel bildirimle gelir; ilerleme uygulamadaki bantta da yazar.
+  - [x] **Y4 (SY.9, Claude, 2026-11-02):** karttaki "Sonraki adım" ve "Bitir"
+    (`LiveActivityIntent`, uygulamanın sürecinde çalışır). Süren yolculuk cihazda saklanır
+    (`Journey` artık `Codable`); açılışta kart hâlâ duruyorsa takip kaldığı bacaktan
+    sürer, kaydı olmayan kartlar kapatılır, yeni yolculuk eskileri kaldırır. Kullanıcı
+    kartı kilit ekranından kaldırırsa yolculuk da biter. Karta dokununca
+    `izmirdolmus://journey` süren tarifi haritada (yeniden planlamadan) açar.
 - **Deneme (2026-11-02, kullanıcının isteğiyle Claude yaptı):** iPhone 18 Pro simülatöründe
   UI testiyle: kompakt ve genişletilmiş ada, kilit ekranı kartı (gerçek kilitle de),
   her adımda güncelleme, varış, varmadan "Bitir" (kart hemen kalkıyor), arka plan →
   ön plan → bildirim merkezi → harita. Kullanıcının bildirdiği "donma" bizden değil:
   kayıtlarda SpringBoard'un üst kenar hareketi (`_UIExclusiveTouchGestureRecognizer:
   Changed`) bitmeden kalmış, dokunuşları o tutuyordu; uygulamanın ana thread'i boştaydı.
+- **Deneme (Y3–Y4):** UI testi konumu Bornova Metro → Şirinyer tarifinin gerçek
+  noktaları boyunca adım adım taşıdı, uygulama arka plandayken: kart "Buca - Bornova
+  dolmuşu · 10,8 km" → "Hazırlan, inişe az kaldı · 240 m" (Dynamic Island kendiliğinden
+  genişledi) → "Varışa yürü · 250 m" → "Vardın"; uygulamada yolculuk kendiliğinden
+  kapandı. Karttaki düğmeler, uygulamayı kapatıp açınca sürdürme, karta dokununca
+  harita ve karttan "Bitir" ayrı bir testte geçti. Denenmedi: yerel bildirim yedeği
+  (Canlı Etkinlikler kapalıyken), bayat kart, kartı kaydırıp kaldırma, güzergahtan
+  çıkma uyarısı (çekirdek testleri var), gerçek cihazda yürüyüş ve dolmuş.
 - **Bulgular (Y1):**
   - Uygulama kapanıp yeniden açılınca (Xcode'un her ⌘R'ı da) `JourneySession` süren
     etkinliği unutuyor: eski kart kilit ekranında güncellenmeden kalıyor, yeni yolculuk
     ikinci bir kart açıyor. Varıştan sonra beş dakika kalan "Vardın" kartı da yeni
-    yolculuğun kartının üstüne biniyor. Y4'te (yeniden açılışta sürdürme) çözülecek.
+    yolculuğun kartının üstüne biniyor. Y4'te çözüldü.
   - Uygulama yeni kurulduğunda sistem eklentiyi birkaç saniye tanımıyor
     (`chronod`: "Ignoring restricted or unknown extension"). O sırada başlatılan
     etkinlik oluşuyor ama çizilmiyor.

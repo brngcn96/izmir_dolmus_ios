@@ -285,6 +285,23 @@ final class MapModel {
         fitSelectedJourney()
     }
 
+    /// Süren yolculuğun tarifini yeniden planlamadan gösterir.
+    func showJourney(_ journey: Journey, from: PlacePoint, to: PlacePoint) {
+        hat = nil
+        geoms = []
+        geomIndex = 0
+        boardPoint = nil
+        boardMeters = nil
+        clearProbe()
+        tripFrom = from
+        tripTo = to
+        journeys = [journey]
+        journeyIndex = 0
+        isPlanning = false
+        message = nil
+        fitSelectedJourney()
+    }
+
     func selectJourney(_ index: Int) {
         guard journeys.indices.contains(index) else { return }
         journeyIndex = index

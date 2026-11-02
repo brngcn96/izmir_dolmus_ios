@@ -106,6 +106,8 @@ struct MapScreen: View {
                 model.showHat(id, data: store.data)
             case .place(let place):
                 model.setProbe(place.coordinate, label: place.label, data: store.data)
+            case .journey(let journey, let from, let to):
+                model.showJourney(journey, from: from, to: to)
             case .trip(let from, let to):
                 Task { await model.startTrip(from: from, to: to, data: store.data) }
             }

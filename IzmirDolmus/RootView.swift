@@ -8,6 +8,7 @@ struct RootView: View {
     @Environment(FareStore.self) private var fares
     @Environment(UserStore.self) private var user
     @Environment(Router.self) private var router
+    @Environment(JourneySession.self) private var journeySession
 
     /// Tanıtım görüldü mü (Flutter'daki `onboarding_done` bayrağıyla aynı ad).
     @AppStorage("onboarding_done") private var isOnboardingDone = false
@@ -75,7 +76,7 @@ struct RootView: View {
         // Widget'a dokununca uygulama `izmirdolmus://…` adresiyle açılır.
         .onOpenURL { url in
             if let link = DeepLink(url: url) {
-                router.open(link, home: user.home, work: user.work)
+                router.open(link, home: user.home, work: user.work, journey: journeySession.current)
             }
         }
         // Control Center kontrolünün intent'i uygulamada çalışınca bıraktığı istek.
@@ -83,7 +84,7 @@ struct RootView: View {
         .onChange(of: PendingDeepLink.shared.link, initial: true) { _, link in
             guard let link else { return }
             PendingDeepLink.shared.link = nil
-            router.open(link, home: user.home, work: user.work)
+            router.open(link, home: user.home, work: user.work, journey: journeySession.current)
         }
         // Tazeleme bitince (ya da iptal edilince) gelen ücretler hatlara yansır.
         .onChange(of: fares.table) {

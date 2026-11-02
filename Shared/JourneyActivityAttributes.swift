@@ -25,6 +25,8 @@ nonisolated struct JourneyActivityAttributes: ActivityAttributes {
         /// İnişe yaklaşıldı: "hazırlan" uyarısı.
         var isApproaching = false
         var hasArrived = false
+        /// Dolmuş bacağında güzergahtan uzaklaşıldı.
+        var isOffRoute = false
     }
 
     /// Bir adım: yürüme ya da dolmuş. Etkinlik boyunca değişmez.
