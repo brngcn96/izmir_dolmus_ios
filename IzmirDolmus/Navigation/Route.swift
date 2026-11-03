@@ -9,6 +9,7 @@ enum Route: Hashable {
     case hat(id: String)
     case events
     case event(id: String)
+    case licenses
 }
 
 /// Bir sekmenin gezinme yığını: `Route` değerlerini ekranlara çevirir.
@@ -36,6 +37,8 @@ struct RouteStack<Root: View>: View {
                     case .event(let id):
                         EventDestinationView(eventID: id)
                             .navigationTransition(.zoom(sourceID: route, in: transitions))
+                    case .licenses:
+                        LicensesView()
                     }
                 }
         }

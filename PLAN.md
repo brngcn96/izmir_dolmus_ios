@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-11-03): Faz 0–8, Faz W ve Faz Y bitti; genel test turu ve ilk düzeltmeleri yapıldı (kalan bulgular aşağıda) · sırada Faz 10 (yayın, Apple Developer hesabı gerekir) ve isteğe bağlı Faz 9 · çalışma düzeni (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-11-03): Faz 0–8, Faz W ve Faz Y bitti; genel test turu ve ilk düzeltmeleri yapıldı (kalan bulgular aşağıda) · Faz 10 sürüyor: hesap gerektirmeyen hazırlıklar bitti, Apple Developer onayı bekleniyor · sonra Faz 9 (reklam) · çalışma düzeni (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -925,6 +925,10 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
     - Önemli Noktalar listelerinde aynı yer iki kez ("X" ve "X · İlçe").
     - "~0 m" mesafeler ve hat bandında "~0 m yürü"; mini harita özeti "Bornova ·
       Bornova · 5 hat" (yer adı tekrarı; 5 üst sınır, 800 m'de 21 hat vardı).
+    - Android hava durumu için Open-Meteo'nun ücretsiz API'sini kullanıyor; bu API
+      yalnızca ticari olmayan kullanıma açık (reklamlı uygulama ticari sayılıyor), CC BY
+      4.0 ile verinin yanında kaynak bağlantısı istiyor ve koordinat üç ondalıkla
+      gidiyor (Apple'ın tanımında kesin konum). iOS WeatherKit'e geçti (Faz 10).
   - Küçük: `izmirdolmus://hat/m19` (küçük harf) bulunamıyor; harita ve planlayıcıdaki
     izin uyarısında "Ayarlar'ı aç" yok; planlayıcıda sonuçsuz aramada boş "Öneriler"
     başlığı; resmi dil karışıyor (sistemin "Yazım denetimi yapın"ı, Ayarlar'da "şoföre
@@ -951,6 +955,64 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
 - **Çıktı:** imzalama, App Store Connect kaydı, gizlilik etiketleri, ekran
   görüntüleri, TestFlight, incelemeye gönderim; web sitesine App Store bağlantısı;
   Figtree (SIL OFL) lisans bildirimi.
+- **Çalışma düzeni (2026-11-03):** kullanıcı başta interaktif yapmak istedi (SF.1–SF.3'ü
+  kendisi yaptı), sonra "bu fazı sen yap" dedi; kalanını Claude yapıyor. Hesaba bağlı
+  adımlar kullanıcıda.
+- **Kararlar (2026-11-03):**
+  - Apple Developer üyeliği başvurusu yapıldı, onay bekleniyor.
+  - Hava durumu Open-Meteo'dan **WeatherKit**'e geçti: Faz 9'da reklam gelecek;
+    Open-Meteo'nun ücretsiz API'si ticari kullanıma kapalı. WeatherKit üyelikle ayda
+    500.000 isteğe kadar ücretsiz, künyesi ("Apple Weather" logosu ve yasal bağlantı)
+    verinin yanında gösterilmeli.
+  - Universal Link 1.1'e kaldı.
+  - Gizlilik politikası iki sürümü de kapsayacak şekilde güncellendi (Flutter repo'su,
+    `privacy-ios` dalı; birleştirip siteyi yayına almak kullanıcıda).
+- **Parçalar:**
+  - [x] SF.1 Gizlilik manifesti (kullanıcı): uygulamada UserDefaults gerekçeleri `CA92.1`
+    ve `1C8F.1`, widget'ta `1C8F.1`; izleme yok. Uygulamanın manifestini widget hedefine
+    de ekleyen üyelik istisnası "Multiple commands produce" hatası verdi, düzeltildi.
+    Sonra toplanan veri bölümü eklendi: diğer kullanıcı içeriği (geri bildirim) ve
+    yaklaşık konum; ikisi de kimlikle ilişkisiz, izleme yok, amaç uygulama işlevi.
+  - [x] SF.2 Info (kullanıcı + Claude): `ITSAppUsesNonExemptEncryption = NO`; widget'ın
+    görünen adı "İzmir Dolmuş".
+  - [x] SF.3 Konum hassasiyeti (kullanıcı): hava durumu isteğinde koordinat iki ondalık
+    (~1 km; Apple'ın tanımında yaklaşık konum). WeatherKit'e geçişte de korunuyor.
+  - [x] SF.4 Lisanslar ve kaynaklar: Ayarlar › Hakkında › "Lisanslar ve kaynaklar"
+    (WeatherKit künyesi ve veri kaynakları bağlantısı; Figtree'nin resmi `OFL.txt`'i,
+    paragrafları birleştirilerek). Anasayfa'da hava durumunun altında künye bağlantısı.
+  - [x] WeatherKit'e geçiş: `WeatherProvider` (uygulamada `AppleWeatherProvider`, UI
+    testlerinde sabit değer), `WeatherInfo` kaynaktan bağımsız (WeatherKit'in durum
+    adından Türkçe ad ve simge, gece ay; 34 durumun hepsi testli), WeatherKit yetkisi
+    entitlements'ta. Open-Meteo uç noktası silindi. Künye alınamazsa hava durumu da
+    gösterilmez.
+  - [x] SF.5 Gizlilik politikası (Flutter repo'su, `site/gizlilik.html` ve `PRIVACY.md`).
+  - [x] SF.6 Mağaza metinleri, inceleme notu ve gizlilik etiketi cevapları:
+    `AppStore/metadata-tr.md`.
+  - [ ] SF.7 Ekran görüntüleri (6,9 inç): WeatherKit çalışınca (hesap gelince).
+  - [ ] SF.8 Team ve imzalama · SF.9 arşiv, doğrulama, yükleme · SF.10 App Store Connect
+    kaydı · SF.11 TestFlight · SF.12 incelemeye gönderme · SF.13 web sitesine App Store
+    bağlantısı ve "iPhone sürümü var mı?" sorusunun cevabı.
+- **Doğrulama (2026-11-03):** derleme; paket testleri (WeatherKit'in 34 durumu dahil);
+  pakette iki manifest, `OFL.txt`, widget adı ve gömülü WeatherKit yetkisi; simülatörde UI
+  test modunda başlıkta "21° Bornova · Açık" ve künye, Lisanslar ekranı; normal modda
+  Team olmadığı için WeatherKit cevap vermiyor, başlıkta yalnızca ilçe (beklenen).
+  Gerçek WeatherKit verisi ve logo hesap gelince denenecek.
+- **Hesap onaylanınca kullanıcının yapacakları:**
+  1. Xcode › Settings › Accounts › (+) › Apple ID ile giriş. Team ID'yi Claude'a ver
+     (Signing & Capabilities'te Team seçmek de olur); otomatik imza App ID'leri, App
+     Group'u ve WeatherKit yeteneğini kaydeder.
+  2. developer.apple.com › Certificates, Identifiers & Profiles › Identifiers ›
+     `com.izmirdolmus.app` › **App Services** sekmesinde WeatherKit'i işaretle (Capabilities
+     sekmesinde de açık olmalı). Etkinleşmesi yarım saat kadar sürebilir.
+  3. appstoreconnect.apple.com › Apps › (+) › New App: iOS, ad "İzmir Dolmuş", birincil
+     dil Türkçe, Bundle ID `com.izmirdolmus.app`, SKU `izmirdolmus-ios`.
+  4. Flutter repo'sunda `privacy-ios` dalını birleştir, siteyi yayına al
+     (izmirdolmus.com/gizlilik güncel olmalı).
+  5. Yükleme App Store Connect'e gider: Claude arşivi hazırlar, yüklemeden önce onay ister
+     (ya da Xcode › Organizer › Distribute App).
+  6. App Store Connect'te `AppStore/metadata-tr.md`'deki bilgileri ve gizlilik cevaplarını
+     gir; ekran görüntülerini yükle; TestFlight'ta kendini iç test kullanıcısı olarak ekle;
+     gerçek cihazda dene (yolculuk modu dışarıda, VoiceOver, hava durumu); incelemeye gönder.
 - **Konu anlatımı (en sonda):** imzalama ve provisioning, App Review'da sık ret nedenleri
   (konum izni metni, ATT), sürümleme, aşamalı yayın, yayın sonrası izleme.
 - **Bitti sayılır:** uygulama App Store'da.

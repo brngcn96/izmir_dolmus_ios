@@ -32,29 +32,6 @@ public struct EventsEndpoint: Endpoint {
     public var timeout: TimeInterval { 10 }
 }
 
-/// Open-Meteo'dan anlık sıcaklık ve hava kodu; API anahtarı gerekmez.
-public struct WeatherEndpoint: Endpoint {
-    public typealias Response = WeatherInfo
-
-    public let coordinate: Coordinate
-
-    public init(coordinate: Coordinate) {
-        self.coordinate = coordinate
-    }
-
-    public var url: URL {
-        var components = URLComponents(string: "https://api.open-meteo.com/v1/forecast")!
-        components.queryItems = [
-            URLQueryItem(name: "latitude", value: String(format: "%.3f", coordinate.latitude)),
-            URLQueryItem(name: "longitude", value: String(format: "%.3f", coordinate.longitude)),
-            URLQueryItem(name: "current", value: "temperature_2m,weather_code"),
-        ]
-        return components.url!
-    }
-
-    public var timeout: TimeInterval { 8 }
-}
-
 /// Geliştiricinin Google Form'una geri bildirim metni gönderir (tek "uzun
 /// yanıt" alanı; yanıtlar Google Sheets'te görünür). Android uygulamasıyla aynı form.
 public struct FeedbackEndpoint: Endpoint {

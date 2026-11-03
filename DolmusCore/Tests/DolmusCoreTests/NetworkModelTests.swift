@@ -39,23 +39,6 @@ import Testing
         #expect(FaresEndpoint(code: code).url.absoluteString == expected)
     }
 
-    @Test("Hava durumu: Open-Meteo cevabı ve görünümü")
-    func decodesWeather() throws {
-        let json = #"{"latitude":38.42,"current_units":{"temperature_2m":"°C"},"current":{"time":"2026-10-15T11:00","interval":900,"temperature_2m":19.6,"weather_code":61}}"#
-        let weather = try WeatherEndpoint(coordinate: Coordinate(latitude: 38.4237, longitude: 27.1428)).decode(Data(json.utf8))
-        #expect(weather == WeatherInfo(temperature: 19.6, code: 61))
-        #expect(weather.temperatureLabel == "20°")
-        #expect(weather.look.title == "Yağmurlu")
-        #expect(WeatherInfo(temperature: -0.4, code: 2).temperatureLabel == "0°")
-        #expect(WeatherInfo(temperature: 9, code: 99).look.title == "Gök gürültülü")
-    }
-
-    @Test("Hava durumu adresi üç ondalıkla")
-    func weatherURL() {
-        let url = WeatherEndpoint(coordinate: Coordinate(latitude: 38.4237, longitude: 27.1428)).url
-        #expect(url.absoluteString == "https://api.open-meteo.com/v1/forecast?latitude=38.424&longitude=27.143&current=temperature_2m,weather_code")
-    }
-
     @Test("Geri bildirim formu: POST, form kodlaması, gövde")
     func feedbackRequest() throws {
         let endpoint = FeedbackEndpoint(text: "Hat: M41 — A&B\n1+1 ğ")

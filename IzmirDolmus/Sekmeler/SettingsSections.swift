@@ -68,7 +68,7 @@ struct FaresSection: View {
     }
 }
 
-/// "Hakkında": hat sayısı, kapsam, sürüm ve uyarı.
+/// "Hakkında": hat sayısı, kapsam, sürüm, lisanslar ve uyarı.
 struct AboutSection: View {
     @Environment(DataStore.self) private var store
 
@@ -77,6 +77,7 @@ struct AboutSection: View {
             LabeledContent("Hat sayısı", value: "\(store.data.hats.count) ana hat")
             LabeledContent("Kapsam", value: "İzmir geneli")
             LabeledContent("Sürüm", value: appVersion)
+            NavigationLink("Lisanslar ve kaynaklar", value: Route.licenses)
         } header: {
             Text("Hakkında")
         } footer: {

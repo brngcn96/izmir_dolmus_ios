@@ -29,6 +29,10 @@ daraldığı için Faz 5'ten itibaren düzen değişti. Türkçe konuş.
   Yolculuk modunda acele yok, hazırlık titiz olmalı.
 - **Güncelleme, 2026-11-02:** kullanıcı hızlanmak istedi: denemeleri ve Faz Y'nin
   kalanını (Y3–Y4) sen yaparsın; konu anlatımı faz sonunda, koddan alıntılarla verilir.
+- **Faz 10 (yayın), 2026-11-03:** kullanıcı önce interaktif yapmak istedi (SF.1–SF.3'ü
+  kendisi yaptı), sonra "bu fazı sen yap" dedi. Kalanını sen yaparsın. Yalnızca hesaba
+  bağlı adımlar (Apple Developer üyeliği, App Store Connect'te girilen bilgiler, yükleme
+  onayı) kullanıcıdadır; onlar için tam tıklama yollarıyla kısa bir liste ver.
 
 ## Yapı
 

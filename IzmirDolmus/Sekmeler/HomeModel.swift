@@ -41,6 +41,8 @@ final class HomeModel {
 
     private(set) var phase: Phase = .idle
     private(set) var weather: WeatherInfo?
+    /// Hava durumunun künyesi; hava durumu yalnızca bununla birlikte gösterilir.
+    private(set) var weatherCredit: WeatherCredit?
     private let location = LocationProvider()
     /// Son konumun alındığı an.
     private var locatedAt: Date?
@@ -58,14 +60,14 @@ final class HomeModel {
 
     /// İlk açılışta bir kez başlatır. İş, ekranın görevine bağlı değil: sekme
     /// değişince yarıda kesilmez.
-    func startIfNeeded(data: DolmusData, client: APIClient) {
+    func startIfNeeded(data: DolmusData, weatherProvider: any WeatherProvider) {
         guard case .idle = phase else { return }
-        Task { await locate(data: data, client: client) }
+        Task { await locate(data: data, weatherProvider: weatherProvider) }
     }
 
     /// Uygulama öne geldi: konum alınamadıysa ya da eskidiyse yeniden alır. İzin
     /// Ayarlar'dan verilip dönülmüş ya da kullanıcı başka bir yere gitmiş olabilir.
-    func refreshIfNeeded(data: DolmusData, client: APIClient) {
+    func refreshIfNeeded(data: DolmusData, weatherProvider: any WeatherProvider) {
         switch phase {
         case .idle, .locating:
             return
@@ -79,7 +81,7 @@ final class HomeModel {
         case .located:
             guard let locatedAt, Date.now.timeIntervalSince(locatedAt) >= Self.maxAge else { return }
         }
-        Task { await locate(data: data, client: client) }
+        Task { await locate(data: data, weatherProvider: weatherProvider) }
     }
 
     /// Uygulama arka plana geçti: konumu beklemek durur, öne gelince yeniden denenir.
@@ -91,46 +93,52 @@ final class HomeModel {
     /// Konumu (yeniden) alır, çevreyi hazırlar; hava durumunu konuma göre tazeler.
     /// Önceki sonuç varsa yenilenirken o görünür; konum gelmezse de kalır (izin
     /// kalkmadıysa).
-    func locate(data: DolmusData, client: APIClient) async {
+    func locate(data: DolmusData, weatherProvider: any WeatherProvider) async {
         pause()
         if surroundings == nil {
             phase = .locating
         }
         do {
             let here = try await location.currentLocation()
-            await show(here, data: data, client: client)
+            await show(here, data: data, weatherProvider: weatherProvider)
         } catch {
             if surroundings != nil && error != .denied { return }
             phase = .failed(error)
-            await loadWeather(at: .izmirCenter, client: client)
+            await loadWeather(at: .izmirCenter, weatherProvider: weatherProvider)
             if error != .denied {
-                waitForFix(data: data, client: client)
+                waitForFix(data: data, weatherProvider: weatherProvider)
             }
         }
     }
 
     /// Konum zamanında gelmediyse ilk konumu bekler; gelince Anasayfa kendiliğinden
     /// dolar (GPS geç tuttu, simülatöre sonradan konum verildi).
-    private func waitForFix(data: DolmusData, client: APIClient) {
+    private func waitForFix(data: DolmusData, weatherProvider: any WeatherProvider) {
         waitingForFix = Task {
             guard let here = try? await location.currentLocation(timeout: nil), !Task.isCancelled else { return }
-            await show(here, data: data, client: client)
+            await show(here, data: data, weatherProvider: weatherProvider)
         }
     }
 
-    private func show(_ here: Coordinate, data: DolmusData, client: APIClient) async {
+    private func show(_ here: Coordinate, data: DolmusData, weatherProvider: any WeatherProvider) async {
         let surroundings = await Self.surroundings(of: here, data: data)
         phase = .located(surroundings)
         locatedAt = .now
         // Hava durumu etiketle tutarlı olsun: ilçe çözüldüyse konumun, yoksa
         // (ör. İzmir dışı) İzmir'in havası.
         let isInIzmir = IzmirDistrict.isDistrict(surroundings.district)
-        await loadWeather(at: isInIzmir ? here : .izmirCenter, client: client)
+        await loadWeather(at: isInIzmir ? here : .izmirCenter, weatherProvider: weatherProvider)
     }
 
     /// Hava durumu alınamazsa eskisi kalır (ilk seferde yalnızca yer adı yazar).
-    private func loadWeather(at coordinate: Coordinate, client: APIClient) async {
-        if let weather = try? await client.send(WeatherEndpoint(coordinate: coordinate)) {
+    /// Künye alınamazsa hava durumu da gösterilmez: WeatherKit verisi künyesiz
+    /// gösterilemez.
+    private func loadWeather(at coordinate: Coordinate, weatherProvider: any WeatherProvider) async {
+        guard let weather = try? await weatherProvider.weather(at: coordinate) else { return }
+        if weatherCredit == nil {
+            weatherCredit = try? await weatherProvider.credit()
+        }
+        if weatherCredit != nil {
             self.weather = weather
         }
     }

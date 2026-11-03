@@ -1,31 +1,17 @@
-/// Anlık hava durumu (Open-Meteo).
-///
-/// Cevap: `{"current": {"temperature_2m": 19.1, "weather_code": 1, …}, …}`.
-public struct WeatherInfo: Sendable, Equatable, Decodable {
+/// Anlık hava durumu: sıcaklık ve kısa durum. Uygulamada kaynağı WeatherKit;
+/// durum, WeatherKit'in `WeatherCondition` adıyla gelir ("partlyCloudy").
+public struct WeatherInfo: Sendable, Equatable {
     /// °C.
     public let temperature: Double
-    /// WMO hava kodu: 0 açık, 1-3 bulutlu, 61-67 yağmur…
-    public let code: Int
+    /// WeatherKit'in durum adı (`WeatherCondition.rawValue`).
+    public let condition: String
+    /// Gündüz mü: açık ve az bulutlu havada güneş ya da ay simgesi için.
+    public let isDaylight: Bool
 
-    public init(temperature: Double, code: Int) {
+    public init(temperature: Double, condition: String, isDaylight: Bool = true) {
         self.temperature = temperature
-        self.code = code
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case current
-    }
-
-    private enum CurrentKeys: String, CodingKey {
-        case temperature = "temperature_2m"
-        case code = "weather_code"
-    }
-
-    public init(from decoder: any Decoder) throws {
-        let current = try decoder.container(keyedBy: CodingKeys.self)
-            .nestedContainer(keyedBy: CurrentKeys.self, forKey: .current)
-        temperature = try current.decode(Double.self, forKey: .temperature)
-        code = try current.decode(Int.self, forKey: .code)
+        self.condition = condition
+        self.isDaylight = isDaylight
     }
 
     /// "19°": tam sayıya yuvarlanmış.
@@ -33,20 +19,43 @@ public struct WeatherInfo: Sendable, Equatable, Decodable {
         "\(Int(temperature.rounded()))°"
     }
 
-    /// Kısa durum adı ve SF Symbol adı (Flutter'daki `_weatherLook`).
+    /// Kısa durum adı ve SF Symbol adı. Başlıkta ilçe adının yanına tek satır sığmalı.
     public var look: (title: String, symbol: String) {
-        switch code {
-        case 0: ("Açık", "sun.max.fill")
-        case 1, 2: ("Az bulutlu", "cloud.sun.fill")
-        case 3: ("Kapalı", "cloud.fill")
-        case 45, 48: ("Sisli", "cloud.fog.fill")
-        case 51...57: ("Çiseleme", "cloud.drizzle.fill")
-        case 61...67: ("Yağmurlu", "cloud.rain.fill")
-        case 71...77: ("Karlı", "cloud.snow.fill")
-        case 80...82: ("Sağanak", "cloud.heavyrain.fill")
-        case 85, 86: ("Kar", "cloud.snow.fill")
-        case 95...: ("Gök gürültülü", "cloud.bolt.rain.fill")
-        default: ("Hava", "thermometer.medium")
+        switch condition {
+        case "clear", "mostlyClear":
+            ("Açık", isDaylight ? "sun.max.fill" : "moon.stars.fill")
+        case "hot":
+            ("Sıcak", "sun.max.fill")
+        case "partlyCloudy":
+            ("Az bulutlu", isDaylight ? "cloud.sun.fill" : "cloud.moon.fill")
+        case "mostlyCloudy":
+            ("Çok bulutlu", "cloud.fill")
+        case "cloudy":
+            ("Kapalı", "cloud.fill")
+        case "foggy", "haze", "smoky", "blowingDust":
+            ("Sisli", "cloud.fog.fill")
+        case "drizzle", "freezingDrizzle":
+            ("Çiseleme", "cloud.drizzle.fill")
+        case "rain", "freezingRain", "sunShowers":
+            ("Yağmurlu", "cloud.rain.fill")
+        case "heavyRain":
+            ("Sağanak", "cloud.heavyrain.fill")
+        case "flurries", "sunFlurries", "snow":
+            ("Karlı", "cloud.snow.fill")
+        case "heavySnow", "blowingSnow", "blizzard":
+            ("Yoğun kar", "cloud.snow.fill")
+        case "sleet", "wintryMix":
+            ("Karla karışık", "cloud.sleet.fill")
+        case "hail":
+            ("Dolu", "cloud.hail.fill")
+        case "frigid":
+            ("Dondurucu", "thermometer.snowflake")
+        case "isolatedThunderstorms", "scatteredThunderstorms", "thunderstorms", "strongStorms", "tropicalStorm", "hurricane":
+            ("Gök gürültülü", "cloud.bolt.rain.fill")
+        case "breezy", "windy":
+            ("Rüzgârlı", "wind")
+        default:
+            ("Hava", "thermometer.medium")
         }
     }
 }

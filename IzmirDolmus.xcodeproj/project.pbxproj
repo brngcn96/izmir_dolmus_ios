@@ -350,7 +350,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IzmirDolmusWidgets/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = IzmirDolmusWidgets;
+				INFOPLIST_KEY_CFBundleDisplayName = "İzmir Dolmuş";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -382,7 +382,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IzmirDolmusWidgets/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = IzmirDolmusWidgets;
+				INFOPLIST_KEY_CFBundleDisplayName = "İzmir Dolmuş";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -535,6 +535,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IzmirDolmus/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "İzmir Dolmuş";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Yakınından geçen dolmuş hatlarını göstermek ve yolculuk modunda adımlarını izleyip inişe yaklaşınca uyarmak için konumun kullanılır. Yolculuk sürerken konum arka planda da kullanılır.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -571,6 +572,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = IzmirDolmus/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "İzmir Dolmuş";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Yakınından geçen dolmuş hatlarını göstermek ve yolculuk modunda adımlarını izleyip inişe yaklaşınca uyarmak için konumun kullanılır. Yolculuk sürerken konum arka planda da kullanılır.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

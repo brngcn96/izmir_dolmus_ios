@@ -11,7 +11,7 @@ struct HomeView: View {
     @Environment(UserStore.self) private var user
     @Environment(EventsStore.self) private var events
     @Environment(JourneySession.self) private var journeySession
-    @Environment(\.apiClient) private var client
+    @Environment(\.weatherProvider) private var weatherProvider
     @Environment(\.routeTransitions) private var transitions
     @Environment(\.scenePhase) private var scenePhase
 
@@ -26,7 +26,7 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                HomeHeader(weather: model.weather, district: model.district)
+                HomeHeader(weather: model.weather, credit: model.weatherCredit, district: model.district)
                 if let current = journeySession.current {
                     ActiveJourneyCard(current: current) {
                         router.showOnMap(.journey(current.journey, from: current.from, to: current.to))
@@ -48,7 +48,7 @@ struct HomeView: View {
                 NearbySection(model: model) { place in
                     router.showOnMap(.place(place))
                 } onRetry: {
-                    Task { await model.locate(data: store.data, client: client) }
+                    Task { await model.locate(data: store.data, weatherProvider: weatherProvider) }
                 }
                 .padding(.top, 26)
                 let recents = Array(user.recentPlaces.prefix(Self.recentLimit))
@@ -70,7 +70,7 @@ struct HomeView: View {
         .background(Color.canvas)
         // Aşağı çekince konum, hava durumu ve etkinlikler tazelenir.
         .refreshable {
-            async let located: Void = model.locate(data: store.data, client: client)
+            async let located: Void = model.locate(data: store.data, weatherProvider: weatherProvider)
             async let loaded: Void = events.refresh()
             _ = await (located, loaded)
         }
@@ -86,12 +86,12 @@ struct HomeView: View {
             }
         }
         .onAppear {
-            model.startIfNeeded(data: store.data, client: client)
+            model.startIfNeeded(data: store.data, weatherProvider: weatherProvider)
         }
         // Öne gelince eski ya da alınamamış konum yenilenir; arka planda beklenmez.
         .onChange(of: scenePhase) { _, phase in
             switch phase {
-            case .active: model.refreshIfNeeded(data: store.data, client: client)
+            case .active: model.refreshIfNeeded(data: store.data, weatherProvider: weatherProvider)
             case .background: model.pause()
             default: break
             }

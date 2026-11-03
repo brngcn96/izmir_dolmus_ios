@@ -49,6 +49,15 @@ enum AppEnvironment {
         return APIClient()
     }()
 
+    nonisolated static let weather: any WeatherProvider = {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-uiTesting") {
+            return UITestWeatherProvider()
+        }
+        #endif
+        return AppleWeatherProvider()
+    }()
+
     #if DEBUG
     private static let uiTestSuite = "com.izmirdolmus.app.uitest"
     private static let uiTestDirectory: URL = {
@@ -62,7 +71,8 @@ enum AppEnvironment {
 }
 
 #if DEBUG
-/// UI testlerinin ağı: İBB'ye, GitHub'a, Open-Meteo'ya ve Google Form'a hiç gidilmez.
+/// UI testlerinin ağı: İBB'ye, GitHub'a ve Google Form'a hiç gidilmez (hava durumu
+/// için bkz. `UITestWeatherProvider`).
 struct UITestTransport: HTTPTransport {
     func perform(_ request: URLRequest) async throws -> (Data, URLResponse) {
         let body: String
@@ -72,8 +82,6 @@ struct UITestTransport: HTTPTransport {
             body = "[]"
         case "raw.githubusercontent.com":
             body = Self.events
-        case "api.open-meteo.com":
-            body = #"{"current": {"temperature_2m": 21.4, "weather_code": 1}}"#
         case "docs.google.com":
             body = "ok"
         default:

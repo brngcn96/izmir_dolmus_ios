@@ -2,9 +2,11 @@ import DolmusCore
 import MapKit
 import SwiftUI
 
-/// Başlık ve sağ üstte hava durumu (gelene kadar yalnızca yer adı).
+/// Başlık ve sağ üstte hava durumu (gelene kadar yalnızca yer adı); altında
+/// WeatherKit'in künyesi.
 struct HomeHeader: View {
     let weather: WeatherInfo?
+    let credit: WeatherCredit?
     let district: String
 
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -36,24 +38,59 @@ struct HomeHeader: View {
     }
 
     private var weatherLabel: some View {
-        HStack(spacing: 6) {
-            if let weather {
-                Image(systemName: weather.look.symbol)
-                    .symbolRenderingMode(.multicolor)
-                Text(weather.temperatureLabel)
-                    .font(.figtree(.headline, weight: .extraBold))
-                    .monospacedDigit()
-                Text("\(district) · \(weather.look.title)")
-                    .font(.figtree(.footnote, weight: .medium))
-                    .foregroundStyle(.textSecondary)
-                    .lineLimit(1)
+        VStack(alignment: typeSize.isAccessibilitySize ? .leading : .trailing, spacing: 2) {
+            HStack(spacing: 6) {
+                if let weather {
+                    Image(systemName: weather.look.symbol)
+                        .symbolRenderingMode(.multicolor)
+                    Text(weather.temperatureLabel)
+                        .font(.figtree(.headline, weight: .extraBold))
+                        .monospacedDigit()
+                    Text("\(district) · \(weather.look.title)")
+                        .font(.figtree(.footnote, weight: .medium))
+                        .foregroundStyle(.textSecondary)
+                        .lineLimit(1)
+                } else {
+                    Text(district)
+                        .font(.figtree(.footnote, weight: .semibold))
+                        .foregroundStyle(.textSecondary)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            if weather != nil, let credit {
+                // WeatherKit'in şartı: logo ve veri kaynaklarına bağlantı, verinin yanında.
+                // Dokunma alanı 44 pt; negatif boşluk başlığı aşağı itmesin diye.
+                Link(destination: credit.legalPageURL) {
+                    WeatherMark(credit: credit)
+                        .tapTarget()
+                }
+                .padding(.vertical, -14)
+                .accessibilityLabel("Hava durumu verisi: \(credit.serviceName). Veri kaynakları")
+            }
+        }
+    }
+}
+
+/// "Apple Weather" logosu (açık ya da koyu); yüklenemezse adı yazılır.
+struct WeatherMark: View {
+    let credit: WeatherCredit
+    var height: CGFloat = 12
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        AsyncImage(url: colorScheme == .dark ? credit.markDarkURL : credit.markLightURL) { phase in
+            if let image = phase.image {
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: height)
             } else {
-                Text(district)
-                    .font(.figtree(.footnote, weight: .semibold))
+                Text(credit.serviceName)
+                    .font(.figtree(.caption2, weight: .semibold))
                     .foregroundStyle(.textSecondary)
             }
         }
-        .accessibilityElement(children: .combine)
     }
 }
 
