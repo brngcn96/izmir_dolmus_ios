@@ -73,7 +73,20 @@ Scripts/sync-data.sh            # varsayılan kaynak: ../izmir_dolmus
 # Altın dosyaları Flutter kodundan yeniden üret (veri ya da Flutter'daki
 # veri/arama kodu değişince; önce sync-data.sh, sonra swift test)
 Scripts/export-golden.sh        # varsayılan kaynak: ../izmir_dolmus
+
+# Yayın: arşivle ve App Store Connect'e yükle (takım C96G54LS5G, otomatik imza;
+# Xcode'da hesap açık olmalı). Her yüklemede CURRENT_PROJECT_VERSION bir artar;
+# yükleme dışa dönük bir iş, önce kullanıcıya sor.
+xcodebuild archive -project IzmirDolmus.xcodeproj -scheme IzmirDolmus \
+  -configuration Release -destination 'generic/platform=iOS' \
+  -archivePath build/IzmirDolmus.xcarchive -allowProvisioningUpdates
+xcodebuild -exportArchive -archivePath build/IzmirDolmus.xcarchive \
+  -exportOptionsPlist AppStore/ExportOptions.plist -exportPath build/export \
+  -allowProvisioningUpdates
 ```
+
+App Store metinleri, inceleme notu, gizlilik cevapları ve ekran görüntüleri
+(6,9 inç, Türkçe sistem dilinde, saat 9:41) `AppStore/` altında.
 
 Arayüze bakmak için: `xcrun simctl boot`, `install`, `launch`, ardından
 `xcrun simctl io <udid> screenshot`. İş bitince uygulamayı kaldır ve simülatörü kapat.

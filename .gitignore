@@ -9,3 +9,6 @@ DerivedData/
 
 # macOS
 .DS_Store
+
+# Yayın arşivi ve dışa aktarma (CLAUDE.md › Komutlar)
+build/

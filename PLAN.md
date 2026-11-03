@@ -988,10 +988,23 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
   - [x] SF.5 Gizlilik politikası (Flutter repo'su, `site/gizlilik.html` ve `PRIVACY.md`).
   - [x] SF.6 Mağaza metinleri, inceleme notu ve gizlilik etiketi cevapları:
     `AppStore/metadata-tr.md`.
-  - [ ] SF.7 Ekran görüntüleri (6,9 inç): WeatherKit çalışınca (hesap gelince).
-  - [ ] SF.8 Team ve imzalama · SF.9 arşiv, doğrulama, yükleme · SF.10 App Store Connect
-    kaydı · SF.11 TestFlight · SF.12 incelemeye gönderme · SF.13 web sitesine App Store
-    bağlantısı ve "iPhone sürümü var mı?" sorusunun cevabı.
+  - [x] SF.7 Ekran görüntüleri: `AppStore/screenshots-6.9/` (1320×2868, JPEG; iPhone 18
+    Pro Max simülatörü, Türkçe sistem dili, 9:41, gerçek veri ve WeatherKit): Anasayfa,
+    haritada tarif, kilit ekranında Canlı Etkinlik, süren yolculuk, haritada yakın hatlar,
+    Hatlar araması, Etkinlikler. Bilerek dışarıda kalanlar: seçenekler listesi (yarı saydam
+    sheet'te mavi şerit) ve hat detayı ("Yukarıda Belirtilen Sınırlar Arası Bindi" çipi;
+    396 hat grubunun 300'ünde var).
+  - [x] SF.8 Team ve imzalama (2026-11-03): üyelik onaylandı, takım `C96G54LS5G` (Mert
+    Ozturk, bireysel) üç hedefte; kullanıcı WeatherKit'i App Services'ta açtı ve telefona
+    (iPhone 15) Xcode'dan derleyince cihaz kaydoldu, profiller oluştu (uygulamada
+    WeatherKit ve App Group, widget'ta App Group; Kasım 2027'ye kadar). Takım imzalı
+    simülatör derlemesinde WeatherKit gerçek veri döndü ("18° Bornova · Çiseleme", Apple
+    Weather logosu).
+  - [ ] SF.9 Arşiv ve yükleme: Release arşivi alındı ve doğrulandı (1.0 (1), şifreleme
+    beyanı, simgeler, manifestler, yetkiler). Yükleme App Store Connect kaydı olmadığı için
+    durdu ("App record … not found"); kullanıcı kaydı açınca yüklenecek.
+  - [ ] SF.10 App Store Connect bilgileri · SF.11 TestFlight · SF.12 incelemeye gönderme ·
+    SF.13 web sitesine App Store bağlantısı ve "iPhone sürümü var mı?" sorusunun cevabı.
 - **Doğrulama (2026-11-03):** derleme; paket testleri (WeatherKit'in 34 durumu dahil);
   pakette iki manifest, `OFL.txt`, widget adı ve gömülü WeatherKit yetkisi; simülatörde UI
   test modunda başlıkta "21° Bornova · Açık" ve künye, Lisanslar ekranı; normal modda
