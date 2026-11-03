@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-11-03): Faz 0–8, Faz W ve Faz Y bitti; genel test turu ve ilk düzeltmeleri yapıldı (kalan bulgular aşağıda) · Faz 10 sürüyor: hesap gerektirmeyen hazırlıklar bitti, Apple Developer onayı bekleniyor · sonra Faz 9 (reklam) · çalışma düzeni (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-11-03): Faz 0–8, Faz W ve Faz Y bitti; genel test turu ve ilk düzeltmeleri yapıldı (kalan bulgular aşağıda) · Faz 10 sürüyor: 1.0 (1) App Store Connect'e yüklendi; TestFlight, mağaza bilgileri ve incelemeye gönderme kullanıcıda · sonra Faz 9 (reklam) · çalışma düzeni (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -959,7 +959,7 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
   kendisi yaptı), sonra "bu fazı sen yap" dedi; kalanını Claude yapıyor. Hesaba bağlı
   adımlar kullanıcıda.
 - **Kararlar (2026-11-03):**
-  - Apple Developer üyeliği başvurusu yapıldı, onay bekleniyor.
+  - Apple Developer üyeliği onaylandı (takım `C96G54LS5G`, bkz. SF.8).
   - Hava durumu Open-Meteo'dan **WeatherKit**'e geçti: Faz 9'da reklam gelecek;
     Open-Meteo'nun ücretsiz API'si ticari kullanıma kapalı. WeatherKit üyelikle ayda
     500.000 isteğe kadar ücretsiz, künyesi ("Apple Weather" logosu ve yasal bağlantı)
@@ -1000,32 +1000,40 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
     WeatherKit ve App Group, widget'ta App Group; Kasım 2027'ye kadar). Takım imzalı
     simülatör derlemesinde WeatherKit gerçek veri döndü ("18° Bornova · Çiseleme", Apple
     Weather logosu).
-  - [ ] SF.9 Arşiv ve yükleme: Release arşivi alındı ve doğrulandı (1.0 (1), şifreleme
-    beyanı, simgeler, manifestler, yetkiler). Yükleme App Store Connect kaydı olmadığı için
-    durdu ("App record … not found"); kullanıcı kaydı açınca yüklenecek.
+  - [x] SF.9 Arşiv ve yükleme (2026-11-03): Release arşivi doğrulandı (1.0 (1), şifreleme
+    beyanı, simgeler, manifestler, yetkiler); kullanıcı App Store Connect kaydını açınca
+    `xcodebuild -exportArchive` ile yüklendi (~8 dk). Xcode "Account credentials have
+    expired" uyarısıyla yerel doğrulamayı atladı, yükleme yine de geçti (kullanıcı Xcode'da
+    hesaba yeniden girmeli). Bu yüzden zorunlu gerekçeli API'ler arşivdeki iki ikili
+    dosyada elle tarandı: yalnızca `UserDefaults` var, iki manifestte de beyanlı. Sonraki
+    yükleme için derleme numarası 2'ye çıkarıldı.
   - [ ] SF.10 App Store Connect bilgileri · SF.11 TestFlight · SF.12 incelemeye gönderme ·
     SF.13 web sitesine App Store bağlantısı ve "iPhone sürümü var mı?" sorusunun cevabı.
 - **Doğrulama (2026-11-03):** derleme; paket testleri (WeatherKit'in 34 durumu dahil);
   pakette iki manifest, `OFL.txt`, widget adı ve gömülü WeatherKit yetkisi; simülatörde UI
   test modunda başlıkta "21° Bornova · Açık" ve künye, Lisanslar ekranı; normal modda
   Team olmadığı için WeatherKit cevap vermiyor, başlıkta yalnızca ilçe (beklenen).
-  Gerçek WeatherKit verisi ve logo hesap gelince denenecek.
+  Gerçek WeatherKit verisi ve logo SF.8'de denendi.
 - **Hesap onaylanınca kullanıcının yapacakları:**
-  1. Xcode › Settings › Accounts › (+) › Apple ID ile giriş. Team ID'yi Claude'a ver
-     (Signing & Capabilities'te Team seçmek de olur); otomatik imza App ID'leri, App
+  1. (yapıldı) Xcode › Settings › Accounts › (+) › Apple ID ile giriş. Team ID'yi Claude'a
+     ver (Signing & Capabilities'te Team seçmek de olur); otomatik imza App ID'leri, App
      Group'u ve WeatherKit yeteneğini kaydeder.
-  2. developer.apple.com › Certificates, Identifiers & Profiles › Identifiers ›
+  2. (yapıldı) developer.apple.com › Certificates, Identifiers & Profiles › Identifiers ›
      `com.izmirdolmus.app` › **App Services** sekmesinde WeatherKit'i işaretle (Capabilities
      sekmesinde de açık olmalı). Etkinleşmesi yarım saat kadar sürebilir.
-  3. appstoreconnect.apple.com › Apps › (+) › New App: iOS, ad "İzmir Dolmuş", birincil
-     dil Türkçe, Bundle ID `com.izmirdolmus.app`, SKU `izmirdolmus-ios`.
+  3. (yapıldı) appstoreconnect.apple.com › Apps › (+) › New App: iOS, ad "İzmir Dolmuş",
+     birincil dil Türkçe, Bundle ID `com.izmirdolmus.app`, SKU `izmirdolmus-ios`.
   4. Flutter repo'sunda `privacy-ios` dalını birleştir, siteyi yayına al
      (izmirdolmus.com/gizlilik güncel olmalı).
-  5. Yükleme App Store Connect'e gider: Claude arşivi hazırlar, yüklemeden önce onay ister
-     (ya da Xcode › Organizer › Distribute App).
-  6. App Store Connect'te `AppStore/metadata-tr.md`'deki bilgileri ve gizlilik cevaplarını
-     gir; ekran görüntülerini yükle; TestFlight'ta kendini iç test kullanıcısı olarak ekle;
-     gerçek cihazda dene (yolculuk modu dışarıda, VoiceOver, hava durumu); incelemeye gönder.
+  5. (yapıldı, 1.0 (1)) Yükleme App Store Connect'e gider: Claude arşivi hazırlar,
+     yüklemeden önce onay ister (ya da Xcode › Organizer › Distribute App).
+  6. TestFlight: "işleme tamamlandı" e-postasından sonra App Store Connect › İzmir Dolmuş ›
+     TestFlight › Internal Testing (+) › grup (otomatik dağıtım açık) › Testers (+) ›
+     kendin; telefonda TestFlight uygulamasından kur. İç test Beta App Review istemez;
+     şifreleme sorusu Info'daki beyanla cevaplı.
+  7. App Store Connect'te `AppStore/metadata-tr.md`'deki bilgileri ve gizlilik cevaplarını
+     gir; ekran görüntülerini yükle; gerçek cihazda dene (yolculuk modu dışarıda, VoiceOver,
+     hava durumu); incelemeye gönder.
 - **Konu anlatımı (en sonda):** imzalama ve provisioning, App Review'da sık ret nedenleri
   (konum izni metni, ATT), sürümleme, aşamalı yayın, yayın sonrası izleme.
 - **Bitti sayılır:** uygulama App Store'da.

@@ -75,8 +75,8 @@ Scripts/sync-data.sh            # varsayılan kaynak: ../izmir_dolmus
 Scripts/export-golden.sh        # varsayılan kaynak: ../izmir_dolmus
 
 # Yayın: arşivle ve App Store Connect'e yükle (takım C96G54LS5G, otomatik imza;
-# Xcode'da hesap açık olmalı). Her yüklemede CURRENT_PROJECT_VERSION bir artar;
-# yükleme dışa dönük bir iş, önce kullanıcıya sor.
+# Xcode'da hesap açık olmalı). CURRENT_PROJECT_VERSION bir sonraki yüklemenin
+# numarasıdır: yükleme geçince bir artır. Yükleme dışa dönük bir iş, önce kullanıcıya sor.
 xcodebuild archive -project IzmirDolmus.xcodeproj -scheme IzmirDolmus \
   -configuration Release -destination 'generic/platform=iOS' \
   -archivePath build/IzmirDolmus.xcarchive -allowProvisioningUpdates
