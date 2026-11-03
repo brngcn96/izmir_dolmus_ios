@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-11-02): Faz 0–8, Faz W ve Faz Y bitti · sırada Faz 10 (yayın, Apple Developer hesabı gerekir) ve isteğe bağlı Faz 9 · çalışma düzeni (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-11-03): Faz 0–8, Faz W ve Faz Y bitti; genel test turu ve ilk düzeltmeleri yapıldı (kalan bulgular aşağıda) · sırada Faz 10 (yayın, Apple Developer hesabı gerekir) ve isteğe bağlı Faz 9 · çalışma düzeni (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -865,6 +865,73 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
   Instruments), erişilebilirlik, derin bağlantılar.
 - **Bitti sayılır:** harita ve listeler takılmasız; VoiceOver ile ana akışlar
   tamamlanabilir; testler yeşil.
+
+### Genel test turu ve düzeltmeler (2026-11-02/03)
+- **Tur (kullanıcının isteğiyle, Claude):** sıfırlanmış iPhone 18 Pro'da yeni kurulum ve
+  gerçek ağla, geçici bir XCUITest projesiyle 20'yi aşkın senaryo; açık, koyu, en büyük
+  yazı ve yatay; konum yok, izin yok, İzmir dışı; widget'lar; Canlı Etkinlikler kapalıyken
+  yolculuk; ayrıca geçici bir iPhone SE (küçük ekran). Uygulama günlüğünde SwiftUI,
+  yerleşim, ActivityKit ya da widget hatası yok; uygulama hiç çökmedi. Canlı Etkinlikler
+  kapalıyken yerel bildirim yedeği ("Durağa geldin", "Güzergahtan çıktın") ilk kez
+  uçtan uca denendi ve çalışıyor.
+- **Düzeltilenler:**
+  - Yolculuk sürerken başka bir tarif açılınca bant eski yolculuğun durumunu ve
+    "Bitir"ini gösteriyordu. Kontroller artık yalnızca süren yolculuğun kendi tarifinde
+    (aynı seçenek, aynı uçlar); başka tarifte "Yolculuğu başlat" ve süren yolculuğun
+    biteceği notu.
+  - Süren yolculuk uygulamada görünmüyordu (Canlı Etkinlikler kapalıysa yeniden
+    açılıştan sonra konum arka planda sürüp bitirecek yer yoktu). Anasayfa'da süren
+    yolculuk kartı: uçlar, o anki adım, "Haritada göster", "Bitir". Kayıt 4 saatte
+    düşer (`maxDuration`; açılışta ve takipte): unutulan yolculuk konumu günlerce açık
+    tutmasın.
+  - Anasayfa konumu bir kez alıyordu. Artık uygulama öne gelince konum alınamamışsa ya
+    da 5 dakikadan eskiyse yeniden alınır; zamanında gelmeyen konum arkada beklenir
+    (gelince kendiliğinden dolar); aşağı çekince konum, hava ve etkinlikler tazelenir;
+    izin Ayarlar'dan verilip dönülünce kendiliğinden alınır. Yenilenirken eski sonuç
+    görünür, konum gelmezse kalır. Bunu denerken çıkan: mini harita yeni konuma
+    geçmiyordu (`Map(initialPosition:)` yalnızca ilk çizimde okunur); `.id` ile düzeldi.
+  - iPhone yalnız dikey: yatayda Yol tarifi sayfası kullanılamıyordu (klavye ve "Rota
+    bul" alanları örtüyordu), yakın hatlar listesi tam ekran ve kapatılamaz açılıyordu.
+  - Koyu modda tarif şeridindeki hat adı ve Adım adım'daki dolmuş simgesi okunmuyordu
+    (sabit `rideColors`); yazı ve simgede koyu zeminde açılıyor (`rideTextColor`).
+  - UI testleri: `testOtherTripWhileJourneyActive` (başka tarif, Anasayfa kartı, karttan
+    bitirme); sürdürme testi yeniden açılışta kartı da bekliyor. Derin bağlantılar
+    `openLink` ile açılıyor: `app.open(_:)` uygulamayı adresle yeniden başlatıp test
+    argümanlarını düşürebiliyordu (iki testte aralıklı hata kaynağıydı).
+- **Doğrulama:** düzeltmelerin ilk halinde şemanın bütün testleri koştu: 99 paket ve 14
+  UI testi geçti; yeni test `app.open(_:)` sorunu yüzünden düştü, `openLink` ile tek
+  başına geçti. Son kodda 10 akış ve 3 Yolculuk testi yeniden koştu, 12'si geçti;
+  değerlendirme testi, simülatörde sistem arayüzüne dokunan sorgular ~15 dakika takılınca
+  düştü (o akışa dokunan değişiklik yok, ilk koşuda geçmişti). O gece Mac'in
+  `mediaanalysisd`'si de yüklüydü; testler bu yüzden saatler sürdü. Ayrı denemelerle: konum
+  sonradan gelince Anasayfa kendiliğinden doluyor; 5 dakika arka planda kalıp başka yerde
+  dönünce ve aşağı çekince yenileniyor (mini harita dahil); izin arka plandayken verilip
+  dönünce hatlar geliyor; 5 saatlik kayıtla açılışta yolculuk ve kartı kalkıyor, kayıt
+  siliniyor; yatay çevirince uygulama dikey kalıyor; koyu modda şerit okunuyor; kart en
+  büyük yazıda düğmeleri alt alta diziyor. Denenmedi: takip sürerken 4 saatte kapanma.
+- **Kalan bulgular (düzeltilmedi):**
+  - En büyük yazı boyutunda kelime ortasından bölünme: Anasayfa'da "Yakındaki Dolmuş
+    Hatları" başlığı, haritadaki yakın hatlar listesinin satırları, Hatlar'daki ilçe adları.
+  - Haritanın üstündeki yarı saydam sheet'lerde (seçenekler, Adım adım, yakın hatlar) mavi
+    güzergah çizgisi satırın arkasından bulanık şerit olarak görünüp satırı seçili
+    gösteriyor; `presentationBackground` ile opak yapılabilir.
+  - Flutter'la ortak:
+    - İzmir dışında başlıkta en yakın İzmir yerinin ilçesi ve oranın havası görünüyor
+      (İstanbul'da "Bergama · Yağmurlu"; en yakın yer aramasında uzaklık sınırı yok).
+      Haritada "Konumum" kamera sınırına takılıyor.
+    - Çok kısa mesafede (~70 m) yürümek yerine dolmuş öneriliyor.
+    - "Yukarıda Belirtilen Sınırlar Arası Bindi" ve "İndi" kilit nokta çipi olarak
+      görünüyor (routes.json'da 136 kez).
+    - Önemli Noktalar listelerinde aynı yer iki kez ("X" ve "X · İlçe").
+    - "~0 m" mesafeler ve hat bandında "~0 m yürü"; mini harita özeti "Bornova ·
+      Bornova · 5 hat" (yer adı tekrarı; 5 üst sınır, 800 m'de 21 hat vardı).
+  - Küçük: `izmirdolmus://hat/m19` (küçük harf) bulunamıyor; harita ve planlayıcıdaki
+    izin uyarısında "Ayarlar'ı aç" yok; planlayıcıda sonuçsuz aramada boş "Öneriler"
+    başlığı; resmi dil karışıyor (sistemin "Yazım denetimi yapın"ı, Ayarlar'da "şoföre
+    danışın"); SE'de "Sonraki adım" iki satıra kırılıyor; tek favorili orta boy widget
+    boş görünüyor.
+  - Sıfırlanmış simülatörde "Ayarlar'ı aç" Ayarlar'ın kök sayfasına açıldı (o sırada
+    simülatörün SettingsSearchReindexService süreci çöküyordu); gerçek cihazda bakılmalı.
 
 ### [ ] Faz 9 — Analitik ve reklam (isteğe bağlı, ~3-4 saat)
 - **Ön koşul (sende):** Firebase'de iOS uygulaması (`GoogleService-Info.plist`),

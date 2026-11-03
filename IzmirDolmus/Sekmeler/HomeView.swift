@@ -1,16 +1,19 @@
 import DolmusCore
 import SwiftUI
 
-/// Anasayfa: en üstte "Nereye gitmek istiyorsun?" ve yol tarifi girişi, Ev/İş/
-/// Önemli Noktalar çipleri, etkinlik kartı; altında konumun çevresinden geçen
-/// hatlar küçük bir haritada; en altta son aramalar (Flutter'daki `HomeScreen`).
+/// Anasayfa: en üstte "Nereye gitmek istiyorsun?", süren yolculuk varsa kartı ve
+/// yol tarifi girişi, Ev/İş/Önemli Noktalar çipleri, etkinlik kartı; altında
+/// konumun çevresinden geçen hatlar küçük bir haritada; en altta son aramalar
+/// (Flutter'daki `HomeScreen`).
 struct HomeView: View {
     @Environment(DataStore.self) private var store
     @Environment(Router.self) private var router
     @Environment(UserStore.self) private var user
     @Environment(EventsStore.self) private var events
+    @Environment(JourneySession.self) private var journeySession
     @Environment(\.apiClient) private var client
     @Environment(\.routeTransitions) private var transitions
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var model = HomeModel()
     /// Adresi seçilen kısayol (Ev ya da İş); `nil` ise sayfa kapalı.
@@ -24,6 +27,12 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 HomeHeader(weather: model.weather, district: model.district)
+                if let current = journeySession.current {
+                    ActiveJourneyCard(current: current) {
+                        router.showOnMap(.journey(current.journey, from: current.from, to: current.to))
+                    }
+                    .padding(.top, 14)
+                }
                 SearchEntry {
                     router.planTrip()
                 }
@@ -59,6 +68,12 @@ struct HomeView: View {
             .padding(.bottom, 24)
         }
         .background(Color.canvas)
+        // Aşağı çekince konum, hava durumu ve etkinlikler tazelenir.
+        .refreshable {
+            async let located: Void = model.locate(data: store.data, client: client)
+            async let loaded: Void = events.refresh()
+            _ = await (located, loaded)
+        }
         // Başlık sayfanın içinde (büyük yazı); navigation bar yalnızca itilen
         // ekranlarda görünür.
         .toolbar(.hidden, for: .navigationBar)
@@ -72,6 +87,14 @@ struct HomeView: View {
         }
         .onAppear {
             model.startIfNeeded(data: store.data, client: client)
+        }
+        // Öne gelince eski ya da alınamamış konum yenilenir; arka planda beklenmez.
+        .onChange(of: scenePhase) { _, phase in
+            switch phase {
+            case .active: model.refreshIfNeeded(data: store.data, client: client)
+            case .background: model.pause()
+            default: break
+            }
         }
         .task {
             await events.load()

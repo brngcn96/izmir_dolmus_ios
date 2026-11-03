@@ -42,11 +42,19 @@ extension MapModel {
     static func rideColor(_ number: Int) -> Color {
         rideColors[number % rideColors.count]
     }
+
+    /// Yazı ve simgede dolmuşun rengi: koyu zeminde koyu mavi ve mor okunmuyor,
+    /// beyazla açılır (haritadaki nokta adlarıyla aynı oran).
+    static func rideTextColor(_ number: Int, in colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark ? rideColor(number).mix(with: .white, by: 0.45) : rideColor(number)
+    }
 }
 
 /// Bacakların şeridi: yürüme metresi → dolmuş adı → …
 struct JourneyStripe: View {
     let journey: Journey
+
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         FlowLayout(spacing: 4) {
@@ -65,7 +73,7 @@ struct JourneyStripe: View {
                     case .ride(let ride):
                         Label(ride.hatName, systemImage: "bus.fill")
                             .font(.figtree(.caption, weight: .bold))
-                            .foregroundStyle(MapModel.rideColor(item.ride))
+                            .foregroundStyle(MapModel.rideTextColor(item.ride, in: colorScheme))
                             .lineLimit(1)
                     }
                 }
@@ -224,10 +232,12 @@ struct JourneyBanner: View {
 }
 
 extension JourneyBanner {
-    /// Yolculuk modu: başlat; sürerken o anki adım, sıradaki adım ve bitir.
+    /// Yolculuk modu: başlat; sürerken o anki adım, sıradaki adım ve bitir. Bunlar
+    /// yalnızca süren yolculuğun kendi tarifinde görünür; başka bir tarifte başlatma
+    /// düğmesi ve süren yolculuğun yerini alacağı notu çıkar.
     @ViewBuilder
     private func journeyModeControls(_ journey: Journey) -> some View {
-        if session.isActive {
+        if let current = session.current, isTracking(journey, current) {
             if let attributes = session.attributes, let state = session.state {
                 // Kartla aynı cümle: Canlı Etkinlikler kapalıysa ilerleme burada görünür.
                 Label {
@@ -259,6 +269,11 @@ extension JourneyBanner {
                 }
                 .glassEffect(.regular.interactive(), in: .capsule)
             }
+            if let message = session.errorMessage {
+                Text(message)
+                    .font(.figtree(.footnote))
+                    .foregroundStyle(.red)
+            }
         } else {
             Button {
                 if let from = model.tripFrom, let to = model.tripTo {
@@ -270,18 +285,25 @@ extension JourneyBanner {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.primary)
+            if let current = session.current {
+                Text("Başlatınca süren yolculuk (\(current.from.label) → \(current.to.label)) biter.")
+                    .font(.figtree(.footnote))
+                    .foregroundStyle(.textSecondary)
+            }
         }
-        if let message = session.errorMessage {
-            Text(message)
-                .font(.figtree(.footnote))
-                .foregroundStyle(.red)
-        }
+    }
+
+    /// Gösterilen tarif süren yolculuğun kendisi mi (aynı seçenek, aynı uçlar)?
+    private func isTracking(_ journey: Journey, _ current: SavedJourney) -> Bool {
+        current.journey == journey && current.from == model.tripFrom && current.to == model.tripTo
     }
 }
 
 /// Adım adım tarif: yürü, bin, aktar, in.
 struct JourneyStepsSheet: View {
     let journey: Journey
+
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         NavigationStack {
@@ -342,7 +364,7 @@ struct JourneyStepsSheet: View {
             }
             let kilometers = (ride.meters / 1000).formatted(.number.precision(.fractionLength(1)).locale(.turkish))
             HStack(alignment: .top, spacing: 12) {
-                stepIcon("bus.fill", color: MapModel.rideColor(number))
+                stepIcon("bus.fill", color: MapModel.rideTextColor(number, in: colorScheme))
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(ride.hatName) dolmuşuna bin")
                         .font(.figtree(.subheadline, weight: .bold))

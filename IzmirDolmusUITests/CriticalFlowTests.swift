@@ -125,12 +125,7 @@ final class CriticalFlowTests: UITestCase {
     func testDeepLinkOpensHat() {
         launch()
         waitForTabs()
-        app.open(URL(string: "izmirdolmus://hat/M19")!)
-        // Sistem "Open in …?" diye sorar; widget dokunuşunda bu onay çıkmıyor.
-        let open = springboard.buttons["Open"].firstMatch
-        if open.waitForExistence(timeout: 3) {
-            open.tap()
-        }
+        openLink("izmirdolmus://hat/M19")
         expect(button("Favorilere ekle"))
     }
 }

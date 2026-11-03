@@ -152,6 +152,76 @@ struct EventsEntry: View {
     }
 }
 
+// MARK: - Süren yolculuk
+
+/// Süren yolculuk: uçlar ve o anki adım; haritada gösterme ve bitirme. Canlı
+/// Etkinlikler kapalıysa uygulamada yolculuğa dönmenin yolu bu kart.
+struct ActiveJourneyCard: View {
+    let current: SavedJourney
+    let onShow: () -> Void
+
+    @Environment(JourneySession.self) private var session
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                Image(systemName: step?.kind == .ride ? "bus.fill" : "figure.walk")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 42, height: 42)
+                    .background(Color.accent, in: .rect(cornerRadius: 12))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Süren yolculuk")
+                        .font(.figtree(.footnote, weight: .semibold))
+                        .foregroundStyle(Color.textSecondary)
+                    Text("\(current.from.label) → \(current.to.label)")
+                        .font(.figtree(.subheadline, weight: .extraBold))
+                        .accessibilityLabel("Nereden \(current.from.label), nereye \(current.to.label)")
+                    if let attributes = session.attributes, let state = session.state {
+                        Text("\(attributes.headline(for: state)) · \(attributes.distanceText(for: state))")
+                            .font(.figtree(.footnote))
+                            .foregroundStyle(Color.textSecondary)
+                            .accessibilityLabel("\(attributes.headline(for: state)), \(attributes.spokenDistance(for: state))")
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            .accessibilityElement(children: .combine)
+            // Büyük yazı boyutlarında iki düğme yan yana sığmaz; yan yanayken "Bitir"
+            // yazısı kadar, kalan yer "Haritada göster"in.
+            let isStacked = typeSize >= .xxLarge
+            let layout = isStacked ? AnyLayout(VStackLayout(spacing: 8)) : AnyLayout(HStackLayout(spacing: 8))
+            layout {
+                Button(action: onShow) {
+                    Label("Haritada göster", systemImage: "map")
+                        .font(.figtree(.subheadline, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.primary)
+                Button(role: .destructive) {
+                    session.end()
+                } label: {
+                    Label("Bitir", systemImage: "stop.fill")
+                        .font(.figtree(.subheadline, weight: .semibold))
+                        .frame(maxWidth: isStacked ? .infinity : nil)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(Color.surface, in: .capsule)
+                }
+            }
+        }
+        .padding(14)
+        .background(Color.brandSoft, in: .rect(cornerRadius: 16))
+    }
+
+    private var step: JourneyActivityAttributes.Step? {
+        guard let attributes = session.attributes, let state = session.state else { return nil }
+        return attributes.step(for: state)
+    }
+}
+
 // MARK: - Yakındaki hatlar
 
 /// "Yakındaki Dolmuş Hatları": konumun çevresi küçük bir haritada ve altında
@@ -274,6 +344,9 @@ private struct NearbyMiniMap: View {
             .annotationTitles(.hidden)
         }
         .mapStyle(.standard(pointsOfInterest: .excludingAll))
+        // `initialPosition` yalnızca ilk çizimde okunur: konum yenilenince harita
+        // yeni yerde yeniden kurulsun.
+        .id(surroundings.here)
         .allowsHitTesting(false)
         .overlay(alignment: .bottomLeading) {
             Text(summary)

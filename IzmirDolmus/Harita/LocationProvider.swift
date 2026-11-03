@@ -23,8 +23,9 @@ final class LocationProvider {
     /// Konum izni verildiğinde `true`; haritadaki mavi nokta için.
     private(set) var isAuthorized = false
 
-    /// İlk geçerli konum; en çok 12 sn beklenir.
-    func currentLocation() async throws(LocationError) -> Coordinate {
+    /// İlk geçerli konum; en çok `timeout` beklenir (`nil` ise konum gelene ya da
+    /// görev iptal edilene kadar).
+    func currentLocation(timeout: Duration? = .seconds(12)) async throws(LocationError) -> Coordinate {
         isLocating = true
         defer { isLocating = false }
         // Oturum açık kaldıkça "kullanırken" izni geçerli; gerekiyorsa sorulur.
@@ -33,9 +34,11 @@ final class LocationProvider {
         do {
             let coordinate = try await withThrowingTaskGroup(of: Coordinate.self) { group in
                 group.addTask { try await Self.firstFix() }
-                group.addTask {
-                    try await Task.sleep(for: .seconds(12))
-                    throw LocationError.timeout
+                if let timeout {
+                    group.addTask {
+                        try await Task.sleep(for: timeout)
+                        throw LocationError.timeout
+                    }
                 }
                 defer { group.cancelAll() }
                 return try await group.next()!

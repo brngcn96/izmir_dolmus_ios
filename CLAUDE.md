@@ -83,6 +83,9 @@ geçici klasörde. Simülatördeki asıl veri değişmez; yeniden açılışı d
 `-uiTestingKeepData` ile test alanını bırakır. Başlangıç değerleri argüman
 alanından verilir (`-onboarding_done YES`); argüman alanı uygulamanın yazdığının
 önüne geçer, uygulamanın değiştireceği bir değeri böyle sabitleme.
+Derin bağlantıyı `openLink(_:)` (`XCUIDevice.shared.system.open`) ile aç:
+`app.open(_:)` bir "launch"tır, uygulamayı adresle yeniden başlatabilir ve o zaman
+test argümanları düşer (uygulama tanıtımla, gerçek ayarlarla açılır).
 `AccessibilityAuditTests` Apple'ın erişilebilirlik denetimini ana ekranlarda varsayılan
 ve en büyük yazı boyutunda koşar; sistem bileşenlerinden gelen bilinen sorunlar
 testteki listede gerekçesiyle durur.

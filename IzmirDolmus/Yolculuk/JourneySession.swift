@@ -21,6 +21,7 @@ struct SavedJourney: Codable, Equatable {
     /// Live Activity'nin kimliği; Canlı Etkinlikler kapalıysa `nil`.
     var activityID: String?
     var legIndex = 0
+    var startedAt = Date.now
 }
 
 /// Yolculuk modu: seçilen tarifi konumla adım adım izler (`JourneyTracker`), Live
@@ -56,6 +57,10 @@ final class JourneySession {
     static let staleAfter: TimeInterval = 5 * 60
     /// Ekranda değişiklik olmasa da bu aralıkla güncellenir: kart bayatlamasın.
     static let heartbeat: TimeInterval = 3 * 60
+    /// Bu kadar süren yolculuk kendiliğinden biter: unutulan bir yolculuk konumu
+    /// arka planda açık tutmasın. Canlı Etkinlik varsa sistem onu en geç 8 saatte
+    /// bitirir; kapalıysa bu sınır olmadan yolculuk günler sonra bile sürerdi.
+    static let maxDuration: TimeInterval = 4 * 3600
 
     init(defaults: UserDefaults = AppEnvironment.defaults) {
         self.defaults = defaults
@@ -150,6 +155,10 @@ final class JourneySession {
 
     private func handle(_ fix: LocationFix) {
         guard var tracker else { return }
+        if let current, Date.now.timeIntervalSince(current.startedAt) >= Self.maxDuration {
+            finish(arrived: false)
+            return
+        }
         let events = tracker.update(with: fix)
         self.tracker = tracker
         apply(events, progress: tracker.progress)
@@ -226,9 +235,12 @@ final class JourneySession {
     }
 
     /// Açılışta: kayıtlı yolculuk sürüyorsa kaldığı yerden devam eder. Kaydı olmayan
-    /// kartları (önceki bir oturumdan kalan) kapatır.
+    /// kartları (önceki bir oturumdan kalan) kapatır; süresi dolan kayıt silinir.
     private func restore() {
-        guard let saved = defaults.codable(SavedJourney.self, forKey: Self.key) else {
+        guard let saved = defaults.codable(SavedJourney.self, forKey: Self.key),
+              Date.now.timeIntervalSince(saved.startedAt) < Self.maxDuration
+        else {
+            defaults.removeObject(forKey: Self.key)
             Task { await Self.endActivities(except: nil) }
             return
         }

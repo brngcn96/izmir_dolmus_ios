@@ -65,6 +65,18 @@ class UITestCase: XCTestCase {
         expect(button("Anasayfa"), timeout: 30)
     }
 
+    /// Adresi sistem üzerinden açar (bir bağlantıya dokunulmuş gibi); çalışan uygulamaya
+    /// gelir. `app.open(_:)` uygulamayı adresle yeniden başlatabiliyor (belgesine göre bir
+    /// "launch"); o zaman test argümanları düşer.
+    func openLink(_ address: String) {
+        XCUIDevice.shared.system.open(URL(string: address)!)
+        // Sistem "Open in …?" diye sorabilir; widget dokunuşunda bu onay çıkmıyor.
+        let open = springboard.buttons["Open"].firstMatch
+        if open.waitForExistence(timeout: 3) {
+            open.tap()
+        }
+    }
+
     /// Bir alana yazar. Odak geç gelebildiği için önce dokunur.
     func type(_ value: String, into field: XCUIElement) {
         tap(field)

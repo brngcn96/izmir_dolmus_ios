@@ -51,11 +51,7 @@ final class JourneyModeTests: UITestCase {
     func startJourney() {
         launch(arguments: Self.places)
         waitForTabs()
-        app.open(URL(string: "izmirdolmus://trip?direction=toWork")!)
-        let open = springboard.buttons["Open"].firstMatch
-        if open.waitForExistence(timeout: 3) {
-            open.tap()
-        }
+        openLink("izmirdolmus://trip?direction=toWork")
         tap(button(containing: "Önerilen"), timeout: 20)
         tap(button("Yolculuğu başlat"))
     }
@@ -70,6 +66,10 @@ final class JourneyModeTests: UITestCase {
         springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.98))
             .press(forDuration: 0.1, thenDragTo: springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2)))
         sleep(1)
+    }
+
+    func element(containing text: String) -> XCUIElement {
+        app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
     }
 
     func cardText(_ text: String) -> XCUIElement {
@@ -115,6 +115,27 @@ final class JourneyModeTests: UITestCase {
         expect(button("Yolculuğu başlat"))
     }
 
+    /// Yolculuk sürerken başka bir tarif: bantta o tarifin başlatma düğmesi ve süren
+    /// yolculuğun biteceği notu çıkar, süren yolculuğun kontrolleri çıkmaz. Anasayfa'da
+    /// süren yolculuğun kartı var; oradan bitirilir.
+    func testOtherTripWhileJourneyActive() {
+        startJourney()
+        expect(button("Bitir"))
+        // Başka bir tarif: uçları yer değiştirip yeniden planla.
+        tap(button(containing: "nereye"))
+        tap(button("Yer değiştir"))
+        tap(button("Rota bul"))
+        tap(button(containing: "Önerilen"), timeout: 20)
+        expect(button("Yolculuğu başlat"))
+        expect(text(containing: "süren yolculuk"))
+        XCTAssertFalse(button("Sonraki adım").exists, "başka tarifte süren yolculuğun kontrolleri olmamalı")
+
+        tap(button("Geri"))
+        expect(element(containing: "Süren yolculuk"))
+        tap(button("Bitir"))
+        XCTAssertFalse(element(containing: "Süren yolculuk").waitForExistence(timeout: 3), "bitirince kart kalkmalı")
+    }
+
     /// Karttaki düğmeler uygulamayı açmadan çalışır; uygulama kapanıp açılınca yolculuk
     /// sürer; karta dokununca haritada açılır; karttaki "Bitir" kapatır.
     func testCardButtonsAndResume() {
@@ -134,6 +155,7 @@ final class JourneyModeTests: UITestCase {
         app.launchArguments.append("-uiTestingKeepData")
         app.launch()
         waitForTabs()
+        expect(element(containing: "Süren yolculuk"))
         XCUIDevice.shared.press(.home)
         sleep(2)
         openNotificationCenter()
