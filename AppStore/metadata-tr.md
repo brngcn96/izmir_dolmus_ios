@@ -15,7 +15,7 @@ tanıtım metni 170 karakter, anahtar kelimeler 100 bayt). Hesaba bağlı adıml
 | SKU | izmirdolmus-ios |
 | Birincil kategori | Navigasyon (Navigation) |
 | İkincil kategori | Seyahat (Travel) |
-| Yaş sınırı | 4+ (bütün sorulara "Yok / Hayır") |
+| Yaş sınırı | 4+ (bütün sorulara "Yok / Hayır"; reklamlar uygulamada genel izleyiciye uygun içerikle sınırlı) |
 | Fiyat | Ücretsiz |
 | Gizlilik politikası adresi | https://izmirdolmus.com/gizlilik (güncel sayfa yayına alınmış olmalı) |
 | Destek adresi (Support URL) | https://izmirdolmus.com |
@@ -96,19 +96,48 @@ To try without being in İzmir: tap the search field on the home screen, enter
 on the home screen need a location in İzmir (e.g. 38.4581, 27.2125).
 
 Weather: Apple WeatherKit. Optional line feedback is sent to the developer's Google
-Form. No ads, analytics or tracking in this version.
+Form.
+
+Ads: Google AdMob. A banner sits above the tab bar (not on the Map tab); an app open
+ad is shown at most once a day when the app comes to the foreground, and an
+interstitial at most once a day when going back from a pushed screen. There are no
+full-screen ads in the first session after installing. The App Tracking Transparency
+prompt is shown once, after the location permission has been answered; ads also work
+without tracking permission. Where consent is required (EEA, UK), Google's consent
+form is shown, and Settings > Hakkında > "Reklam gizlilik seçenekleri" lets the user
+change it. No analytics.
 ```
 
 ## Uygulama gizliliği (App Privacy) cevapları
 
-Bu sürüm için (reklam gelince, Faz 9'da, yeniden doldurulacak):
+Sürüm 1.0, reklamlı. Uygulamanın kendi topladıkları (geri bildirim, hava durumu için
+yaklaşık konum) ile Google Mobile Ads 13.12.0 ve UMP 3.1.0'ın gizlilik manifestlerinde
+beyan ettikleri birleştirildi; SDK güncellenince manifestlere yeniden bakılmalı.
+Amaçların App Store Connect'teki adları: Third-Party Advertising, Developer's
+Advertising or Marketing, Analytics, App Functionality.
 
 - **Veri topluyor musun?** Evet.
+- **Konum › Yaklaşık konum**: Uygulama işlevi (hava durumu, ~1 km), Üçüncü taraf
+  reklamcılığı, Geliştiricinin reklamcılığı, Analiz. Kimlikle ilişkilendirilir: **Evet**
+  (AdMob). İzleme: Hayır.
 - **Kullanıcı içeriği › Diğer kullanıcı içeriği** (geri bildirim notu ve cevapları):
-  amaç Uygulama işlevi; kimlikle ilişkilendirilmez; izleme için kullanılmaz.
-- **Konum › Yaklaşık konum** (hava durumu için ~1 km'ye yuvarlanmış koordinat):
-  amaç Uygulama işlevi; kimlikle ilişkilendirilmez; izleme için kullanılmaz.
+  Uygulama işlevi. İlişkilendirilmez. İzleme: Hayır.
+- **Tanımlayıcılar › Cihaz kimliği** (reklam kimliği, izin verilirse): Üçüncü taraf
+  reklamcılığı, Geliştiricinin reklamcılığı, Analiz. İlişkilendirilir: **Evet**.
+  İzleme: **Evet**.
+- **Kullanım verileri › Ürün etkileşimi**: Üçüncü taraf reklamcılığı, Geliştiricinin
+  reklamcılığı, Analiz, Uygulama işlevi (rıza formu). İlişkilendirilir: **Evet**.
+  İzleme: Hayır.
+- **Kullanım verileri › Reklam verileri**: Üçüncü taraf reklamcılığı, Geliştiricinin
+  reklamcılığı, Analiz. İlişkilendirilir: **Evet**. İzleme: Hayır.
+- **Tanılama › Çökme verileri**: Analiz. İlişkilendirilmez. İzleme: Hayır.
+- **Tanılama › Performans verileri**: Üçüncü taraf reklamcılığı, Geliştiricinin
+  reklamcılığı, Analiz, Uygulama işlevi (rıza formu). İlişkilendirilmez. İzleme: Hayır.
+- **Tanılama › Diğer tanılama verileri**: Üçüncü taraf reklamcılığı, Geliştiricinin
+  reklamcılığı, Analiz. İlişkilendirilmez. İzleme: Hayır.
 - Diğer bütün türler: toplanmıyor. Kesin konum cihazdan çıkmıyor.
 
-Uygulamanın gizlilik manifestindeki (`IzmirDolmus/PrivacyInfo.xcprivacy`) toplanan
-veri bölümü bu cevaplarla aynı.
+Cihaz kimliği izleme için kullanıldığından ürün sayfasında "Sizi İzlemek İçin
+Kullanılan Veriler" bölümü çıkar; uygulama bunun için izleme izni (ATT) ister.
+Uygulamanın kendi gizlilik manifesti (`IzmirDolmus/PrivacyInfo.xcprivacy`) yalnızca
+uygulamanın kendi topladıklarını beyan eder; SDK'larınki kendi paketlerinde.

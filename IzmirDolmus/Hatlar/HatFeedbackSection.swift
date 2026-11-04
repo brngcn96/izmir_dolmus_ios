@@ -29,6 +29,14 @@ struct HatFeedbackSection: View {
             )
             .lineLimit(3...6)
             .focused($isEditingNote)
+            // Not alanında: `Section`'a eklenince bölümün her satırına uygulanıyor,
+            // klavyenin üstünde dört "Bitti" çıkıyordu.
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Bitti") { isEditingNote = false }
+                }
+            }
             Button {
                 isEditingNote = false
                 // Gönderim ekrandan bağımsız sürsün diye `.task` değil `Task`:
@@ -51,12 +59,6 @@ struct HatFeedbackSection: View {
             Text("Geri bildirim")
         } footer: {
             footer(for: state)
-        }
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Bitti") { isEditingNote = false }
-            }
         }
         // Sonuç listenin altında kalabilir: VoiceOver kullanıcısına okunur.
         .onChange(of: state) { _, state in

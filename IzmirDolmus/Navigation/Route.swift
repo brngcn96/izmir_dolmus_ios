@@ -12,37 +12,69 @@ enum Route: Hashable {
     case licenses
 }
 
-/// Bir sekmenin gezinme yığını: `Route` değerlerini ekranlara çevirir.
+/// Bir sekmenin gezinme yığını: `Route` değerlerini ekranlara çevirir. Ekranların
+/// altında, tab bar'ın hemen üstünde banner reklam durabilir.
 struct RouteStack<Root: View>: View {
     let tab: AppTab
+    /// Banner reklamın yeri; `nil` ise bu sekmede banner yok.
+    var banner: BannerPlacement?
     @ViewBuilder var root: Root
 
     @Environment(Router.self) private var router
+    @Environment(AdsController.self) private var ads
     /// Zoom geçişlerinin kaynakları ve hedefleri bu ad alanında eşleşir.
     @Namespace private var transitions
 
     var body: some View {
-        @Bindable var router = router
-        NavigationStack(path: $router[tab]) {
+        // Banner her ekranın kendisinde, yığının dışında değil: dışarıdaki boşluğu itilen
+        // ekranlar hesaba katmıyor, hat detayındaki "Haritada göster" çubuğu banner'ın
+        // arkasında kalıyordu.
+        NavigationStack(path: path) {
             root
+                .adBanner(banner == .always || banner == .collapsible, isCollapsible: banner == .collapsible)
                 .navigationDestination(for: Route.self) { route in
-                    // Zoom yalnızca kaynağı belli hedeflerde: Anasayfa'daki
-                    // etkinlik kartı → Etkinlikler, etkinlik kartı → detay.
-                    switch route {
-                    case .hat(let id):
-                        HatDestinationView(hatID: id)
-                    case .events:
-                        EventsView()
-                            .navigationTransition(.zoom(sourceID: route, in: transitions))
-                    case .event(let id):
-                        EventDestinationView(eventID: id)
-                            .navigationTransition(.zoom(sourceID: route, in: transitions))
-                    case .licenses:
-                        LicensesView()
-                    }
+                    destination(for: route)
                 }
         }
         .environment(\.routeTransitions, transitions)
+    }
+
+    /// Zoom yalnızca kaynağı belli hedeflerde: Anasayfa'daki etkinlik kartı → Etkinlikler,
+    /// etkinlik kartı → detay. Banner geçişten önce eklenir; geçiş ekranın kökünde kalır.
+    @ViewBuilder
+    private func destination(for route: Route) -> some View {
+        let showsBanner = banner != nil
+        switch route {
+        case .hat(let id):
+            HatDestinationView(hatID: id)
+                .adBanner(showsBanner)
+        case .events:
+            EventsView()
+                .adBanner(showsBanner)
+                .navigationTransition(.zoom(sourceID: route, in: transitions))
+        case .event(let id):
+            EventDestinationView(eventID: id)
+                .adBanner(showsBanner)
+                .navigationTransition(.zoom(sourceID: route, in: transitions))
+        case .licenses:
+            LicensesView()
+                .adBanner(showsBanner)
+        }
+    }
+
+    /// Yığının yolu. Kullanıcı geri gidince (geri düğmesi, kaydırma, sekmeye yeniden
+    /// dokunma) yol bu bağlantıdan kısalır ve geçiş reklamı denenir; uygulamanın kendi
+    /// gezinmesi (`Router`'ın metotları, dışarıdan gelen adresler) bu bağlantıdan geçmez.
+    private var path: Binding<[Route]> {
+        Binding {
+            router[tab]
+        } set: { newPath in
+            let isBack = newPath.count < router[tab].count
+            router[tab] = newPath
+            if isBack {
+                ads.didNavigateBack()
+            }
+        }
     }
 }
 

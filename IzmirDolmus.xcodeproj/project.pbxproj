@@ -12,6 +12,7 @@
 		AF819CBC3092A62C00B2169B /* IzmirDolmusWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AF819CA63092A62B00B2169B /* IzmirDolmusWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AF819CC33092A67C00B2169B /* DolmusCore in Frameworks */ = {isa = PBXBuildFile; productRef = AF819CC23092A67C00B2169B /* DolmusCore */; };
 		D0A000000000000000000018 /* DolmusCore in Frameworks */ = {isa = PBXBuildFile; productRef = D0A000000000000000000017 /* DolmusCore */; };
+		D0A000000000000000000203 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = D0A000000000000000000202 /* GoogleMobileAds */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -116,6 +117,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0A000000000000000000018 /* DolmusCore in Frameworks */,
+				D0A000000000000000000203 /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -209,6 +211,7 @@
 			name = IzmirDolmus;
 			packageProductDependencies = (
 				D0A000000000000000000017 /* DolmusCore */,
+				D0A000000000000000000202 /* GoogleMobileAds */,
 			);
 			productName = IzmirDolmus;
 			productReference = D0A000000000000000000004 /* IzmirDolmus.app */;
@@ -266,6 +269,9 @@
 			);
 			mainGroup = D0A000000000000000000002;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D0A000000000000000000201 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D0A000000000000000000003 /* Products */;
 			projectDirPath = "";
@@ -528,6 +534,7 @@
 		D0A00000000000000000000F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ADMOB_APP_ID = "ca-app-pub-3940256099942544~1458002511";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = IzmirDolmus/IzmirDolmus.entitlements;
@@ -541,6 +548,7 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Yakınından geçen dolmuş hatlarını göstermek ve yolculuk modunda adımlarını izleyip inişe yaklaşınca uyarmak için konumun kullanılır. Yolculuk sürerken konum arka planda da kullanılır.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "İzin verirsen reklamlar ilgi alanlarına göre seçilebilir. İzin vermesen de uygulamanın bütün özellikleri çalışır; reklamlar yalnızca daha az ilgili olur.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -566,6 +574,7 @@
 		D0A000000000000000000010 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ADMOB_APP_ID = "ADMOB_RELEASE_APP_ID";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = IzmirDolmus/IzmirDolmus.entitlements;
@@ -579,6 +588,7 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Yakınından geçen dolmuş hatlarını göstermek ve yolculuk modunda adımlarını izleyip inişe yaklaşınca uyarmak için konumun kullanılır. Yolculuk sürerken konum arka planda da kullanılır.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "İzin verirsen reklamlar ilgi alanlarına göre seçilebilir. İzin vermesen de uygulamanın bütün özellikleri çalışır; reklamlar yalnızca daha az ilgili olur.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -680,6 +690,17 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		D0A000000000000000000201 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.12.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		AF819CC23092A67C00B2169B /* DolmusCore */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -688,6 +709,11 @@
 		D0A000000000000000000017 /* DolmusCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DolmusCore;
+		};
+		D0A000000000000000000202 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0A000000000000000000201 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

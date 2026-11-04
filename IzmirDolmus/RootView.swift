@@ -9,6 +9,7 @@ struct RootView: View {
     @Environment(UserStore.self) private var user
     @Environment(Router.self) private var router
     @Environment(JourneySession.self) private var journeySession
+    @Environment(AdsController.self) private var ads
 
     /// Tanıtım görüldü mü (Flutter'daki `onboarding_done` bayrağıyla aynı ad).
     @AppStorage("onboarding_done", store: AppEnvironment.defaults) private var isOnboardingDone = false
@@ -54,6 +55,9 @@ struct RootView: View {
             Theme.applyNavigationBarFonts()
         }
         .task {
+            if isOnboardingDone {
+                ads.prepareAtLaunch()
+            }
             async let loading: Void = loadData()
             try? await Task.sleep(for: SplashView.duration)
             // İlk açılışta tanıtım hemen gelir (veri arkada yüklenmeye devam
@@ -76,6 +80,7 @@ struct RootView: View {
         // Widget'a dokununca uygulama `izmirdolmus://…` adresiyle açılır.
         .onOpenURL { url in
             if let link = DeepLink(url: url) {
+                ads.noteExternalOpen()
                 router.open(link, home: user.home, work: user.work, journey: journeySession.current)
             }
         }
@@ -84,6 +89,7 @@ struct RootView: View {
         .onChange(of: PendingDeepLink.shared.link, initial: true) { _, link in
             guard let link else { return }
             PendingDeepLink.shared.link = nil
+            ads.noteExternalOpen()
             router.open(link, home: user.home, work: user.work, journey: journeySession.current)
         }
         // Tazeleme bitince (ya da iptal edilince) gelen ücretler hatlara yansır.

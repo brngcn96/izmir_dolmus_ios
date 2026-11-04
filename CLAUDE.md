@@ -50,6 +50,10 @@ daraldığı için Faz 5'ten itibaren düzen değişti. Türkçe konuş.
   kodundan üretilmiş beklenen çıktılar (altın dosyalar); `GoldenTests` portları
   bunlarla karşılaştırır. Elle düzenlenmez; `Scripts/export-golden.sh` yazar ve
   kaynağı `Golden/SOURCE`'a kaydeder.
+- `IzmirDolmus/Reklam/` — AdMob (Google Mobile Ads, Swift paketi olarak; UMP onunla
+  gelir). Reklam birimleri `AdUnit.swift`'te: Debug'da Google'ın test birimleri,
+  Release'te gerçekleri. Uygulama kimliği Info.plist'te `$(ADMOB_APP_ID)` yapı ayarından.
+  Ne zaman gösterileceği `DolmusCore`'daki `AdPolicy`'de (Flutter'daki kurallar).
 
 ## Komutlar
 
@@ -94,9 +98,10 @@ Arayüze bakmak için: `xcrun simctl boot`, `install`, `launch`, ardından
 ## UI testleri
 
 `IzmirDolmusUITests` uygulamayı `-uiTesting` ile açar (yalnızca Debug, bkz.
-`AppEnvironment`): ağ istekleri hazır cevaplarla döner (İBB, GitHub, Open-Meteo,
-Google Form'a gidilmez), ayarlar her açılışta silinen ayrı bir alanda, önbellekler
-geçici klasörde. Simülatördeki asıl veri değişmez; yeniden açılışı deneyen test
+`AppEnvironment`): ağ istekleri hazır cevaplarla döner (İBB, GitHub, Google Form'a
+gidilmez; hava durumu WeatherKit yerine sabit değer), reklamlar kapalı (rıza, izleme
+izni ve SDK başlamaz, banner görünmez), ayarlar her açılışta silinen ayrı bir alanda,
+önbellekler geçici klasörde. Simülatördeki asıl veri değişmez; yeniden açılışı deneyen test
 `-uiTestingKeepData` ile test alanını bırakır. Başlangıç değerleri argüman
 alanından verilir (`-onboarding_done YES`); argüman alanı uygulamanın yazdığının
 önüne geçer, uygulamanın değiştireceği bir değeri böyle sabitleme.

@@ -55,7 +55,6 @@ public struct ReviewPolicy: Sendable, Equatable {
 
     /// Gün anahtarı, cihazın saat diliminde.
     static func dayKey(_ date: Date, calendar: Calendar) -> String {
-        let parts = calendar.dateComponents([.year, .month, .day], from: date)
-        return "\(parts.year ?? 0)-\(parts.month ?? 0)-\(parts.day ?? 0)"
+        calendar.dayKey(for: date)
     }
 }

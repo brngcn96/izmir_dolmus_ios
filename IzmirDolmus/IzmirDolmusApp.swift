@@ -10,6 +10,7 @@ struct IzmirDolmusApp: App {
     @State private var feedback = FeedbackStore()
     @State private var journeySession = JourneySession()
     @State private var review = ReviewStore()
+    @State private var ads = AdsController()
 
     var body: some Scene {
         WindowGroup {
@@ -22,6 +23,7 @@ struct IzmirDolmusApp: App {
                 .environment(feedback)
                 .environment(journeySession)
                 .environment(review)
+                .environment(ads)
         }
     }
 }

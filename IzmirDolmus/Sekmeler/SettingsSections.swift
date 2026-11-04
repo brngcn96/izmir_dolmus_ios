@@ -68,9 +68,10 @@ struct FaresSection: View {
     }
 }
 
-/// "Hakkında": hat sayısı, kapsam, sürüm, lisanslar ve uyarı.
+/// "Hakkında": hat sayısı, kapsam, sürüm, lisanslar, reklam rızası ve uyarı.
 struct AboutSection: View {
     @Environment(DataStore.self) private var store
+    @Environment(AdsController.self) private var ads
 
     var body: some View {
         Section {
@@ -78,6 +79,12 @@ struct AboutSection: View {
             LabeledContent("Kapsam", value: "İzmir geneli")
             LabeledContent("Sürüm", value: appVersion)
             NavigationLink("Lisanslar ve kaynaklar", value: Route.licenses)
+            // Yalnızca rızanın gerektiği yerlerde (AB, Birleşik Krallık): Google'ın formu.
+            if ads.isPrivacyOptionsRequired {
+                Button("Reklam gizlilik seçenekleri") {
+                    Task { await ads.presentPrivacyOptions() }
+                }
+            }
         } header: {
             Text("Hakkında")
         } footer: {

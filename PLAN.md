@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-11-03): Faz 0–8, Faz W ve Faz Y bitti; genel test turu ve ilk düzeltmeleri yapıldı (kalan bulgular aşağıda) · Faz 10 sürüyor: 1.0 (1) App Store Connect'e yüklendi; TestFlight, mağaza bilgileri ve incelemeye gönderme kullanıcıda · sonra Faz 9 (reklam) · çalışma düzeni (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-11-04): Faz 0–8, Faz W ve Faz Y bitti; genel test turu ve ilk düzeltmeleri yapıldı (kalan bulgular aşağıda) · Faz 9 (reklam) kodu bitti, AdMob'daki iOS kimlikleri bekleniyor (o zamana kadar Release derlenmez; analitik ertelendi) · Faz 10 sürüyor: 1.0 (1) reklamsız TestFlight'ta; reklamlı 1.0 (2) kimlikler gelince yüklenecek, mağaza bilgileri ve incelemeye gönderme kullanıcıda · çalışma düzeni (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -937,19 +937,94 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
   - Sıfırlanmış simülatörde "Ayarlar'ı aç" Ayarlar'ın kök sayfasına açıldı (o sırada
     simülatörün SettingsSearchReindexService süreci çöküyordu); gerçek cihazda bakılmalı.
 
-### [ ] Faz 9 — Analitik ve reklam (isteğe bağlı, ~3-4 saat)
-- **Ön koşul (sende):** Firebase'de iOS uygulaması (`GoogleService-Info.plist`),
-  AdMob'da iOS uygulaması ve reklam birimleri.
-- **Çıktı:** Android'dekiyle aynı adlarla analitik olayları; banner, App Open ve
-  geçiş reklamı (aynı kurallar: günde 1, ilk oturumda yok); ATT izin akışı, rıza
-  penceresi, gizlilik manifesti.
-- **Karar noktası:** banner'ın yüzen cam tab bar ile çakışmayan yerleşimi.
-- **Parçalar:** S9.1 `Analytics` cephesi · S9.2 banner için `UIViewRepresentable`
-  sarmalayıcı · S9.3 ATT akışı · S9.4 `scenePhase` ile App Open tetikleme.
-- **Konu anlatımı (en sonda):** UIKit ↔ SwiftUI köprüleme, Swift 6 altında `Sendable`
-  olmayan 3. parti SDK'lar, ATT ve gizlilik kuralları.
-- **Bitti sayılır:** test reklamları doğru anlarda görünür; izin reddinde
-  uygulama sorunsuz çalışır.
+### [ ] Faz 9 — Reklam (analitik ertelendi)
+- **Ön koşul (sende):** AdMob'da iOS uygulaması ve reklam birimleri (banner, App Open,
+  geçiş). Henüz yok (2026-11-04); Release onlar girilene kadar bilerek derlenmez.
+- **Kullanıcının yapacakları (hesap):**
+  1. admob.google.com › Apps › Add app › iOS › "Is the app listed on a supported app
+     store?" No › ad "İzmir Dolmuş" › Add app; sonra Ad units › Add ad unit ile Banner,
+     App open ve Interstitial. Uygulama kimliğini ve üç birim kimliğini Claude'a ver.
+  2. Uygulama AB ya da Birleşik Krallık'ta da yayınlanacaksa: AdMob › Privacy & messaging ›
+     European regulations › mesaj oluştur ve yayınla (yoksa oradaki kullanıcılara reklam
+     gösterilmez). Yalnızca Türkiye'de yayınlanacaksa gerekmez (App Store Connect ›
+     Pricing and Availability).
+  3. App Store Connect › App Privacy: `AppStore/metadata-tr.md`'deki yeni cevaplar.
+  4. Flutter repo'sunda `privacy-ios` dalını birleştir, siteyi yayına al (güncel gizlilik
+     politikası ve `app-ads.txt`).
+  5. Yayından sonra AdMob › Apps › İzmir Dolmuş › App settings'te uygulamayı App Store
+     kaydına bağla.
+- **Kararlar (2026-11-04):**
+  - Kapsam yalnızca reklam: kullanıcı reklamı istedi; analitik (Firebase) ayrı SDK ve
+    ayrı hesap adımı, bu sürüme alınmadı.
+  - SDK: Google Mobile Ads 13.12.0, Swift paketi (UMP 3.1.0 onunla geliyor); projenin
+    ilk uzak paketi, `Package.resolved` repo'da.
+  - Formatlar ve kurallar Android'deki gibi (`AdPolicy`): banner; App Open öne gelişte
+    günde bir, istendikten sonra 4 sn içinde hazırsa (geç kalırsa sonraki öne gelişe
+    saklanır, 4 saatte bayatlar); geçiş reklamı kullanıcı bir ekrandan geri dönünce günde
+    bir, 350 ms sonra; ilk oturumda tam ekran reklam yok; iki tam ekran reklam arası 90
+    sn. iOS'a özgü: yolculuk sürerken, uygulama bir adresle (widget, Live Activity,
+    Control Center) açılınca ve aynı öne gelişte bir izin penceresi açıldıysa App Open yok.
+  - Banner (karar noktası): her ekranın altında, tab bar'ın hemen üstünde; ekranın kendi
+    alt çubuğu (hat detayındaki "Haritada göster") banner'ın üstünde. Harita'da yok
+    (altını sheet'ler kullanıyor), Hatlar'ın kökünde yok (arama ve klavye), yol tarifi
+    sheet'inde yok; Favoriler'in kökünde collapsible (Flutter'daki gibi); klavye açıkken
+    gizli. Boyut standart adaptive (~60 pt, kullanıcının kararı): SDK 13'ün önerdiği
+    "large" (~125 pt) tab bar'la birlikte ekranın dörtte birini kaplıyordu; standart boyut
+    deprecated, derlemede bir uyarı kalıyor.
+  - Geri dönüş, yığının yolu kullanıcı geri gidince kısaldığında anlaşılır (`RouteStack`'in
+    yol bağlantısı); `Router`'ın kendi gezinmesi bu bağlantıdan geçmediği için Flutter'daki
+    "eylem pop'u" ayrımına gerek kalmadı.
+  - İzin sırası: UMP rıza bilgisi (oturumda bir kez; AB ve Birleşik Krallık'ta form,
+    Türkiye'de yok) → izleme izni (ATT, bir kez; konum izni cevaplanmadan sorulmaz) → SDK.
+    Tanıtımı geçmiş kullanıcıda rıza, SDK ve ön yükleme açılış ekranında başlar. İzleme
+    izni reddedilse de reklam gelir. Reklam içeriği genel izleyiciyle (G) sınırlı:
+    uygulama 4+.
+  - UI testlerinde reklam kapalı (`-uiTesting`).
+- **Parçalar:**
+  - [x] `AdPolicy` (DolmusCore) ve testleri; gün anahtarı değerlendirme kurallarıyla ortak.
+  - [x] S9.2 Banner: `AdBanner` (`UIViewRepresentable`; reklam pencereye girince istenir,
+    yüklenene kadar yer kaplamaz), `adBanner(_:)` ve `BannerPlacement`.
+  - [x] S9.3 Rıza ve izleme izni (`AdsController`); Ayarlar › Hakkında'da yalnızca rıza
+    gereken yerde "Reklam gizlilik seçenekleri".
+  - [x] S9.4 `scenePhase` ile App Open; geri dönüşte geçiş reklamı.
+  - [x] Info.plist: `GADApplicationIdentifier` (`ADMOB_APP_ID` yapı ayarı), Google'ın 50
+    SKAdNetwork kimliği, `NSUserTrackingUsageDescription`.
+  - [x] Gizlilik: politika güncellendi ve siteye `app-ads.txt` eklendi (Flutter repo'su,
+    `privacy-ios` dalı, iki commit); App Privacy cevapları ve inceleme notu
+    `AppStore/metadata-tr.md`'de (Google'ın SDK manifestlerinden).
+  - [ ] Gerçek kimlikler: `AdUnit.swift`'teki `#error`'un yerine birimler, Release'in
+    `ADMOB_APP_ID`'sine uygulama kimliği; sonra 1.0 (2) yüklemesi.
+  - [ ] S9.1 Analitik (ertelendi).
+- **Doğrulama (2026-11-04):** paket testleri (109, reklam kuralları dahil); UI testleri
+  (15/15, reklamsız test modunda; erişilebilirlik denetimleri dahil); Debug derlemesi (tek
+  uyarı: banner boyutu), Release kimlik engelinde duruyor. Simülatörde (iPhone 18 Pro,
+  gerçek ağ, Google'ın test birimleri) QA sürücüsüyle:
+  - İlk oturum: tanıtımda konum izni → sekmeler açılınca Google'ın test kimliğindeki
+    açıklama penceresi → izleme izni sorusu Türkçe metnimizle; App Open ve geçiş reklamı
+    yok.
+  - Banner Anasayfa, hat detayı, Favoriler (collapsible) ve Ayarlar'da; Harita'da ve
+    Hatlar'ın kökünde yok; klavye açılınca gizleniyor; hat detayında "Haritada göster"
+    banner'ın üstünde. Türkiye'de reklam gizlilik seçeneği görünmüyor.
+  - İkinci oturum: App Open soğuk açılışta 4 sn'de yetişmedi (simülatörde ilk istek SDK'nın
+    başlangıcıyla uzuyor), saklandı ve sonraki öne gelişte gösterildi; "Continue to app"
+    ile kapandı.
+  - Geçiş reklamı: hat detayından geri dönünce gösterildi, "Close" ile kapandı; aynı gün
+    ikinci geri dönüşte gösterilmedi.
+  - Denenmedi: tanıtımı "Atla"yla geçip konum iznini Anasayfa'da verme yolunda izleme
+    izninin sırası (simülatörde izleme kararı sıfırlanmadı).
+- **Bulgular:**
+  - Hat detayındaki geri bildirim notunun klavye çubuğu dört "Bitti" gösteriyordu
+    (`Section`'a eklenen `toolbar` her satıra uygulanıyordu); düzeltildi.
+  - Hat detayında klavye açılınca "Haritada göster" çubuğu klavyenin üstüne biniyor
+    (reklamdan önce de böyleydi); sonra bakılacak.
+  - Simülatörde `simctl uninstall` uygulamanın izleme izni kararını sıfırlamıyor; soruyu
+    yeniden görmek için `simctl privacy … reset` gerekir.
+  - App Open'da kapatma "Continue to app" (reklamın içinde); "Close Advertisement" orada
+    devre dışı.
+- **Konu anlatımı (en sonda):** UIKit ↔ SwiftUI köprüleme (`UIViewRepresentable`),
+  Objective-C SDK'ların Swift 6'da MainActor işaretleri, ATT ve rıza kuralları.
+- **Bitti sayılır:** test reklamları doğru anlarda görünür; izin reddinde uygulama sorunsuz
+  çalışır; gerçek kimliklerle Release derlenir.
 
 ### [ ] Faz 10 — Yayın (~3-4 saat + inceleme süresi)
 - **Çıktı:** imzalama, App Store Connect kaydı, gizlilik etiketleri, ekran
