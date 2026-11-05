@@ -22,48 +22,19 @@ struct RecentPlacesSection: View {
     }
 }
 
-/// "Ücretler": son güncelleme, elle tazeleme, ilerleme ve iptal.
-struct FaresSection: View {
-    @Environment(FareStore.self) private var fares
-    @Environment(DataStore.self) private var store
+/// "Görünüm": asıl tema açık; istenirse cihazın koyu modu izlenir.
+struct AppearanceSection: View {
+    static let followsSystemKey = "appearance_follows_system"
+
+    @AppStorage(Self.followsSystemKey, store: AppEnvironment.defaults) private var followsSystem = false
 
     var body: some View {
         Section {
-            LabeledContent("Son güncelleme", value: fares.updatedAt?.turkishDateTime ?? "Henüz yok")
-            if case .refreshing(let done, let total) = fares.status {
-                ProgressView(value: Double(done), total: Double(max(total, 1))) {
-                    Text("Ücretler güncelleniyor…")
-                } currentValueLabel: {
-                    Text("\(done) / \(total) hat")
-                        .monospacedDigit()
-                }
-                Button("İptal et", role: .destructive) {
-                    fares.cancel()
-                }
-            } else {
-                Button("Ücretleri şimdi güncelle") {
-                    fares.refresh(codes: store.data.fareCodes)
-                }
-            }
+            Toggle("Cihazın koyu modunu kullan", isOn: $followsSystem)
         } header: {
-            Text("Ücretler")
+            Text("Görünüm")
         } footer: {
-            Text(footer)
-        }
-    }
-
-    private var footer: String {
-        switch fares.status {
-        case .finished(let updated, 0):
-            "\(updated) hattın ücreti güncellendi."
-        case .finished(0, _):
-            "Ücretler alınamadı; önceki ücretler kullanılıyor. İnternet bağlantını kontrol et."
-        case .finished(let updated, let failed):
-            "\(updated) hattın ücreti güncellendi; \(failed) hattınki alınamadı, onlarda önceki ücret kullanılıyor."
-        case .cancelled(let updated):
-            "İptal edildi. Gelen \(updated) hattın ücreti bu oturumda kullanılıyor."
-        case .idle, .refreshing:
-            "Ücretler İzmir Büyükşehir Belediyesi'nin servisinden alınır ve 14 günde bir kendiliğinden güncellenir."
+            Text("Kapalıyken uygulama hep açık temada görünür; açıkken cihaz koyu moddaysa koyu temaya geçer.")
         }
     }
 }

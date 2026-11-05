@@ -52,22 +52,27 @@ struct MapScreen: View {
             bottomPanel
         }
         .toolbar(.hidden, for: .navigationBar)
+        // Haritanın üstündeki sheet'lerin zemini opak: yarı saydam sheet'te arkadaki bulanık
+        // harita listeleri okunaksız yapıyordu (test kullanıcısı, 2026-11-05).
         .sheet(isPresented: $model.isShowingNearbyList) {
             NearbyListSheet(model: model) { hatID in
                 model.showHat(hatID, data: store.data)
             }
             .presentationDetents([.height(240), .fraction(0.45)])
             .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.45)))
+            .presentationBackground(Color.canvas)
         }
         .sheet(isPresented: $model.isShowingJourneyList) {
             JourneyListSheet(model: model)
                 .presentationDetents([.fraction(0.45), .large])
                 .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.45)))
+                .presentationBackground(Color.canvas)
         }
         .sheet(isPresented: $model.isShowingSteps) {
             if let journey = model.selectedJourney {
                 JourneyStepsSheet(journey: journey)
                     .presentationDetents([.medium, .large])
+                    .presentationBackground(Color.canvas)
             }
         }
         .overlay(alignment: .top) {
@@ -89,11 +94,13 @@ struct MapScreen: View {
             CategorySheet(center: mapCenter) { place in
                 model.setProbe(place.coordinate, label: place.label, data: store.data)
             }
+            .presentationBackground(Color.canvas)
         }
         .sheet(isPresented: $isSearching) {
             MapSearchSheet(near: mapCenter) { place in
                 model.setProbe(place.coordinate, label: place.label, data: store.data)
             }
+            .presentationBackground(Color.canvas)
         }
         .alert("Konum", isPresented: Binding(get: { locationError != nil }, set: { if !$0 { locationError = nil } })) {
             Button("Tamam", role: .cancel) {}

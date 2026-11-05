@@ -106,7 +106,7 @@ struct JourneyCard: View {
             }
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("~\(journey.estimatedMinutes) dk")
-                    .font(.figtree(.headline, weight: .extraBold))
+                    .font(.figtree(isRecommended ? .title3 : .headline, weight: .extraBold))
                 Text(journey.transfersLabel)
                     .font(.figtree(.subheadline))
                     .foregroundStyle(.textSecondary)
@@ -137,7 +137,8 @@ struct JourneyCard: View {
     }
 }
 
-/// Seçenekler listesi (en iyi önce).
+/// Seçenekler listesi (en iyi önce). Önerilen seçenek, Flutter'daki gibi renkli zeminle
+/// ve büyük süreyle öne çıkar.
 struct JourneyListSheet: View {
     let model: MapModel
 
@@ -152,6 +153,7 @@ struct JourneyListSheet: View {
                             JourneyCard(journey: journey, isRecommended: index == 0, isSelected: index == model.journeyIndex)
                                 .foregroundStyle(Color.primary)
                         }
+                        .listRowBackground(index == 0 ? Color.brandSoft : Color.surface)
                     }
                 } footer: {
                     Text("Süreler ve ücretler yaklaşıktır (sefer saati verisi yok). Dolmuşlar güzergah üzerinde uygun yerde bindirir ve indirir.")

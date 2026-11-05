@@ -31,7 +31,7 @@ struct RouteStack<Root: View>: View {
         // arkasında kalıyordu.
         NavigationStack(path: path) {
             root
-                .adBanner(banner == .always || banner == .collapsible, isCollapsible: banner == .collapsible)
+                .adBanner(banner != nil, isCollapsible: banner == .collapsible)
                 .navigationDestination(for: Route.self) { route in
                     destination(for: route)
                 }

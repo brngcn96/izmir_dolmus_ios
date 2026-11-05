@@ -9,8 +9,6 @@ enum BannerPlacement {
     /// Bütün ekranlarında; kökte açık yüklenip kullanıcının daraltabildiği (collapsible)
     /// biçimde (Flutter'da Favoriler sekmesi), itilen ekranlarda normal.
     case collapsible
-    /// Yalnızca köke itilen ekranlarda: Hatlar'ın kökünde arama alanı ve klavye var.
-    case pushed
 }
 
 extension View {

@@ -912,9 +912,9 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
 - **Kalan bulgular (düzeltilmedi):**
   - En büyük yazı boyutunda kelime ortasından bölünme: Anasayfa'da "Yakındaki Dolmuş
     Hatları" başlığı, haritadaki yakın hatlar listesinin satırları, Hatlar'daki ilçe adları.
-  - Haritanın üstündeki yarı saydam sheet'lerde (seçenekler, Adım adım, yakın hatlar) mavi
-    güzergah çizgisi satırın arkasından bulanık şerit olarak görünüp satırı seçili
-    gösteriyor; `presentationBackground` ile opak yapılabilir.
+  - (Düzeltildi, 2026-11-05: sheet'ler opak.) Haritanın üstündeki yarı saydam sheet'lerde
+    (seçenekler, Adım adım, yakın hatlar) mavi güzergah çizgisi satırın arkasından bulanık
+    şerit olarak görünüp satırı seçili gösteriyordu.
   - Flutter'la ortak:
     - İzmir dışında başlıkta en yakın İzmir yerinin ilçesi ve oranın havası görünüyor
       (İstanbul'da "Bergama · Yağmurlu"; en yakın yer aramasında uzaklık sınırı yok).
@@ -936,6 +936,35 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
     boş görünüyor.
   - Sıfırlanmış simülatörde "Ayarlar'ı aç" Ayarlar'ın kök sayfasına açıldı (o sırada
     simülatörün SettingsSearchReindexService süreci çöküyordu); gerçek cihazda bakılmalı.
+
+### Test kullanıcısı geri bildirimi (2026-11-05)
+TestFlight'taki sürümü deneyen kullanıcının yedi maddesi ve yapılanlar:
+- **Tema:** telefon koyu moddayken uygulama da koyuydu, haritada hat renkleri seçilmiyordu.
+  Asıl tema artık açık (Flutter sürümü de yalnız açık); Ayarlar › Görünüm'deki "Cihazın
+  koyu modunu kullan" açılırsa cihazı izler. Widget'lar ve Canlı Etkinlik sistemin
+  görünümünü izlemeye devam ediyor.
+- **Hatlar sekmesi:** ayrı büyüteç düğmesi yerine adı yazılı, otobüs simgeli sekme; sıra
+  Flutter'daki gibi (Anasayfa, Harita, Hatlar, Favoriler, Ayarlar). Arama alanı başlığın
+  altında hep görünür ama kendiliğinden açılmaz (sekme seçilince klavye açılıyor, liste
+  görülemiyordu); kaydırınca klavye kapanır. Hatlar'ın kökünde de banner var.
+- **Ücretler:** Ayarlar'daki elle güncelleme bölümü kaldırıldı (Flutter'da da yok); ücretler
+  14 günde bir kendiliğinden güncellenmeye devam ediyor. `FareStore`'daki ilerleme durumu ve
+  iptal de kaldırıldı.
+- **WeatherKit künyesi:** kaldırılamaz: Apple, hava verisi gösteren uygulamada " Weather"
+  işaretinin ve veri kaynakları bağlantısının görünür olmasını şart koşuyor. Değişmedi.
+- **Yazı boyutu:** bütün metin stilleri 2 punto büyük (Figtree aynı puntoda SF'ten küçük
+  görünüyor); Dynamic Type ile büyüme sürüyor. Navigation bar başlıkları aynı kaldı.
+- **Yol tarifi:** Nereden → Nereye sayfasının ve haritanın üstündeki sheet'lerin (seçenekler,
+  Adım adım, yakın hatlar, harita araması, Önemli Noktalar) zemini opak; arkadaki bulanık
+  harita okumayı zorlaştırıyordu. Önerilen seçenek açık mavi zeminde ve büyük süreyle
+  (Flutter'daki öne çıkan kart gibi).
+- **Doğrulama:** UI testleri (15/15, iki erişilebilirlik denetimi dahil); simülatör koyu
+  moddayken QA turu: uygulama açık temada açılıyor; Hatlar'da
+  klavye kendiliğinden açılmıyor, kaydırınca kapanıyor; Ayarlar'da ücret bölümü yok;
+  anahtar açılınca koyu, kapanınca açık; tarif sayfası opak; önerilen seçenek belirgin;
+  büyük yazıyla Anasayfa, Hatlar, Ayarlar ve tarif paneli düzgün.
+- **Bulgu:** cihaz koyu moddayken anahtar açılıp kapatılınca bulunulan sekmede tab bar'ın koyu
+  cam rengi kalıyor; sekme değişince düzeliyor.
 
 ### [x] Faz 9 — Reklam (analitik ertelendi)
 - **Ön koşul (sende):** AdMob'da iOS uygulaması ve reklam birimleri (banner, App Open,
@@ -1075,6 +1104,10 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
     Hatlar araması, Etkinlikler. Bilerek dışarıda kalanlar: seçenekler listesi (yarı saydam
     sheet'te mavi şerit) ve hat detayı ("Yukarıda Belirtilen Sınırlar Arası Bindi" çipi;
     396 hat grubunun 300'ünde var).
+  - [ ] SF.7b Ekran görüntülerini yenileme: test kullanıcısının geri bildiriminden sonra
+    (2026-11-05) tab bar (adı yazılı Hatlar sekmesi) ve yazı boyutu değişti; görüntüler
+    incelemeye göndermeden önce yeniden alınmalı. Debug'da test banner'ı göründüğü için
+    görüntü çekiminde reklamı kapatan bir yol gerekiyor.
   - [x] SF.8 Team ve imzalama (2026-11-03): üyelik onaylandı, takım `C96G54LS5G` (Mert
     Ozturk, bireysel) üç hedefte; kullanıcı WeatherKit'i App Services'ta açtı ve telefona
     (iPhone 15) Xcode'dan derleyince cihaz kaydoldu, profiller oluştu (uygulamada

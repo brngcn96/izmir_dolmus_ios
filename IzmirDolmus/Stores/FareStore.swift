@@ -2,31 +2,22 @@ import DolmusCore
 import Foundation
 import Observation
 
-/// Canlı ücretlerin sahibi: önbelleği okur, İBB'den tazeler, ilerlemeyi ve
-/// sonucu arayüze bildirir. Ücretleri hatlara `DataStore` uygular (`RootView`).
+/// Canlı ücretlerin sahibi: önbelleği okur, 14 günde bir İBB'den kendiliğinden tazeler.
+/// Ücretleri hatlara `DataStore` uygular (`RootView`). Elle tazeleme yok (Flutter'da da
+/// kaldırılmıştı).
 @Observable
 final class FareStore {
-    enum Status: Equatable {
-        case idle
-        case refreshing(done: Int, total: Int)
-        /// Tazeleme bitti: kaç hattın cevabı geldi, kaçı alınamadı.
-        case finished(updated: Int, failed: Int)
-        /// Kullanıcı iptal etti; gelenler bu oturumda kullanılır, kaydedilmez.
-        case cancelled(updated: Int)
-    }
-
     /// Hat kodu → canlı ücret satırları (önbellekten ya da son tazelemeden).
     private(set) var table: FareTable = [:]
     /// Son tamamlanan tazelemenin zamanı; hiç yapılmadıysa `nil`.
-    private(set) var updatedAt: Date?
-    private(set) var status: Status = .idle
+    private var updatedAt: Date?
 
     /// Kendiliğinden tazeleme aralığı (Flutter'daki gibi 14 gün).
     static let maxAge: TimeInterval = 14 * 24 * 3600
 
     private let refresher: FareRefresher
     private let cache: FileCache<FareTable>
-    /// Süren tazeleme. Sahibi store: ekran kapansa da sürer, `cancel()` ile durur.
+    /// Süren tazeleme. Sahibi store: ekran kapansa da sürer.
     private var refreshTask: Task<Void, Never>?
 
     init(
@@ -43,10 +34,6 @@ final class FareStore {
         return Date.now.timeIntervalSince(updatedAt) >= Self.maxAge
     }
 
-    var isRefreshing: Bool {
-        refreshTask != nil
-    }
-
     /// Diskteki son ücretleri yükler (uygulama açılışında, ağdan önce).
     func loadCache() async {
         guard let entry = await cache.load() else { return }
@@ -54,39 +41,23 @@ final class FareStore {
         updatedAt = entry.savedAt
     }
 
-    /// Tazelemeyi başlatır ve hemen döner; sürüyorsa bir şey yapmaz. İlerleme
-    /// `status`'tan izlenir.
+    /// Tazelemeyi başlatır ve hemen döner; sürüyorsa bir şey yapmaz.
     func refresh(codes: [String]) {
         guard refreshTask == nil else { return }
-        status = .refreshing(done: 0, total: codes.count)
         refreshTask = Task {
-            let result = await refresher.refresh(codes: codes) { done, total in
-                self.status = .refreshing(done: done, total: total)
-            }
-            await finish(result, cancelled: Task.isCancelled)
+            let result = await refresher.refresh(codes: codes)
+            await finish(result)
             refreshTask = nil
         }
     }
 
-    func cancel() {
-        refreshTask?.cancel()
-    }
-
-    private func finish(_ result: FareRefreshResult, cancelled: Bool) async {
+    private func finish(_ result: FareRefreshResult) async {
         // Cevabı gelmeyen hatlar önceki ücretini korur.
         table.merge(result.fares) { _, new in new }
-        if cancelled {
-            // Yarım tazeleme "güncel" sayılmaz: tarih ve dosya değişmez, bir
-            // sonraki açılışta yeniden denenir.
-            status = .cancelled(updated: result.fares.count)
-            return
-        }
         // Hiçbir cevap gelmediyse (ağ yok) tarih ilerlemez; sonra yeniden denenir.
-        if !result.fares.isEmpty {
-            let now = Date.now
-            updatedAt = now
-            try? await cache.save(table, at: now)
-        }
-        status = .finished(updated: result.fares.count, failed: result.failedCodes.count)
+        guard !result.fares.isEmpty else { return }
+        let now = Date.now
+        updatedAt = now
+        try? await cache.save(table, at: now)
     }
 }

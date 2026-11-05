@@ -37,7 +37,10 @@ struct HatListView: View {
         }
         .listStyle(.sidebar)
         .navigationTitle("Hatlar")
-        .searchable(text: $query, prompt: "Hat ara (ör. Buca, Karşıyaka)")
+        // Arama alanı başlığın altında hep görünür ama kendiliğinden açılmaz: liste önce
+        // bütünüyle görülür; kaydırınca klavye kapanır.
+        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Hat ara (ör. Buca, Karşıyaka)")
+        .scrollDismissesKeyboard(.immediately)
         .overlay {
             if isSearching && results.isEmpty {
                 ContentUnavailableView.search(text: query)

@@ -67,7 +67,7 @@ extension Font {
         }
     }
 
-    /// Figtree; sistemin text style'ıyla aynı puntoda başlar ve Dynamic Type ile
+    /// Figtree; sistemin text style'ından 2 punto büyük başlar ve Dynamic Type ile
     /// onunla birlikte büyür.
     static func figtree(_ style: Font.TextStyle, weight: FigtreeWeight = .regular) -> Font {
         .custom(weight.fontName, size: style.baseSize, relativeTo: style)
@@ -75,9 +75,10 @@ extension Font {
 }
 
 extension Font.TextStyle {
-    /// Varsayılan (Large) yazı boyutundaki punto.
+    /// Varsayılan (Large) yazı boyutundaki punto: sistemin değerinin 2 fazlası. Figtree
+    /// aynı puntoda SF'ten küçük görünüyor; test kullanıcısı yazıları ufak buldu (2026-11-05).
     fileprivate var baseSize: CGFloat {
-        switch self {
+        let system: CGFloat = switch self {
         case .largeTitle: 34
         case .title: 28
         case .title2: 22
@@ -90,5 +91,6 @@ extension Font.TextStyle {
         case .caption2: 11
         default: 17
         }
+        return system + 2
     }
 }

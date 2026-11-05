@@ -7,11 +7,6 @@ extension Locale {
 }
 
 extension Date {
-    /// "15 Eki 2026 14:03".
-    var turkishDateTime: String {
-        formatted(.dateTime.day().month(.abbreviated).year().hour().minute().locale(.turkish))
-    }
-
     /// "3 saat önce", "dün".
     var turkishRelative: String {
         formatted(.relative(presentation: .named).locale(.turkish))

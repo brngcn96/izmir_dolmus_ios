@@ -13,6 +13,8 @@ struct RootView: View {
 
     /// Tanıtım görüldü mü (Flutter'daki `onboarding_done` bayrağıyla aynı ad).
     @AppStorage("onboarding_done", store: AppEnvironment.defaults) private var isOnboardingDone = false
+    /// Koyu tema yalnızca bu açıksa ve cihaz koyu moddaysa; yoksa hep açık tema (Ayarlar › Görünüm).
+    @AppStorage(AppearanceSection.followsSystemKey, store: AppEnvironment.defaults) private var followsSystemAppearance = false
     @State private var isSplashDone = false
     @State private var widgetSync = WidgetSync()
 
@@ -48,6 +50,8 @@ struct RootView: View {
         .animation(.easeInOut(duration: 0.45), value: isOnboardingDone)
         // Yazı tipini kendisi belirtmeyen bütün metinler Figtree olur.
         .font(.figtree(.body))
+        // Asıl tema açık (Flutter sürümü gibi): koyu haritada hat renkleri seçilmiyordu.
+        .preferredColorScheme(followsSystemAppearance ? nil : .light)
         // `App.init` içinde çağrılınca uygulamanın vurgu rengi (AccentColor)
         // sistem mavisine düşüyordu; scene kurulduktan sonra çağrılmalı.
         // Navigation bar'lar sekmelerle birlikte, yani bundan sonra oluşuyor.

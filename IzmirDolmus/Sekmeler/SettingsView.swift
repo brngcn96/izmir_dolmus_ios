@@ -1,7 +1,8 @@
 import DolmusCore
 import SwiftUI
 
-/// Ayarlar: kayıtlı adresler (Ev/İş), son aramalar, ücretler, hakkında.
+/// Ayarlar: kayıtlı adresler (Ev/İş), son aramalar, görünüm, hakkında. Ücretler
+/// kendiliğinden güncellenir (14 günde bir); elle güncelleme Flutter'da da kaldırılmıştı.
 struct SettingsView: View {
     @Environment(UserStore.self) private var user
 
@@ -15,7 +16,7 @@ struct SettingsView: View {
                 SavedPlaceRow(kind: .work, place: user.work) { editing = .work }
             }
             RecentPlacesSection()
-            FaresSection()
+            AppearanceSection()
             AboutSection()
         }
         .navigationTitle("Ayarlar")
