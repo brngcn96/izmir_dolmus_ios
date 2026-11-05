@@ -1127,6 +1127,9 @@ TestFlight'taki sürümü deneyen kullanıcının yedi maddesi ve yapılanlar:
     kullanıcının onayıyla yüklendi (~3 dk, yerel doğrulama geçti). Uyarı: Google'ın iki
     framework'ünün dSYM'i yok, o framework'lerin içindeki çökmeler sembolsüz görünür.
     Sonraki yükleme için derleme numarası 3.
+  - [x] SF.9c 1.0 (3) (2026-11-05): test kullanıcısının geri bildirimiyle yapılan
+    düzeltmeler; kullanıcının onayıyla arşivlenip yüklendi (~3 dk). Sonraki yükleme için
+    derleme numarası 4.
   - [ ] SF.10 App Store Connect bilgileri · SF.11 TestFlight · SF.12 incelemeye gönderme ·
     SF.13 web sitesine App Store bağlantısı ve "iPhone sürümü var mı?" sorusunun cevabı.
 - **Doğrulama (2026-11-03):** derleme; paket testleri (WeatherKit'in 34 durumu dahil);
