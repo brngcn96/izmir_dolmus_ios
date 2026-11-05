@@ -980,7 +980,9 @@ TestFlight'taki sürümü deneyen kullanıcının yedi maddesi ve yapılanlar:
      Pricing and Availability).
   3. App Store Connect › App Privacy: `AppStore/metadata-tr.md`'deki yeni cevaplar.
   4. Flutter repo'sunda `privacy-ios` dalını birleştir, siteyi yayına al (güncel gizlilik
-     politikası ve `app-ads.txt`).
+     politikası ve `app-ads.txt`). 2026-11-05: Claude yerelde birleştirdi (`main`,
+     `origin/main`'in 4 commit önünde, birleştirme `798ff92`); bu makinede git'in
+     kullanabileceği GitHub kimliği olmadığı için push kullanıcıda.
   5. Yayından sonra AdMob › Apps › İzmir Dolmuş › App settings'te uygulamayı App Store
      kaydına bağla.
 - **Kararlar (2026-11-04):**
@@ -1148,7 +1150,8 @@ TestFlight'taki sürümü deneyen kullanıcının yedi maddesi ve yapılanlar:
   3. (yapıldı) appstoreconnect.apple.com › Apps › (+) › New App: iOS, ad "İzmir Dolmuş",
      birincil dil Türkçe, Bundle ID `com.izmirdolmus.app`, SKU `izmirdolmus-ios`.
   4. Flutter repo'sunda `privacy-ios` dalını birleştir, siteyi yayına al
-     (izmirdolmus.com/gizlilik güncel olmalı).
+     (izmirdolmus.com/gizlilik güncel olmalı). Yerelde birleştirildi (2026-11-05), push
+     kullanıcıda; bkz. Faz 9.
   5. (yapıldı, 1.0 (1)) Yükleme App Store Connect'e gider: Claude arşivi hazırlar,
      yüklemeden önce onay ister (ya da Xcode › Organizer › Distribute App).
   6. TestFlight: "işleme tamamlandı" e-postasından sonra App Store Connect › İzmir Dolmuş ›
