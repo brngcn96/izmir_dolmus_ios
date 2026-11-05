@@ -1088,10 +1088,12 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
     hesaba yeniden girmeli). Bu yüzden zorunlu gerekçeli API'ler arşivdeki iki ikili
     dosyada elle tarandı: yalnızca `UserDefaults` var, iki manifestte de beyanlı. Sonraki
     yükleme için derleme numarası 2'ye çıkarıldı.
-  - [ ] SF.9b Reklamlı 1.0 (2) (2026-11-05): `build/IzmirDolmus.xcarchive` alındı ve
+  - [x] SF.9b Reklamlı 1.0 (2) (2026-11-05): `build/IzmirDolmus.xcarchive` alındı ve
     doğrulandı (gerçek AdMob uygulama kimliği, 50 SKAdNetwork, izleme izni metni, Google'ın
-    iki framework'ü kendi gizlilik manifestleriyle, WeatherKit ve App Group yetkileri).
-    Yükleme kullanıcının onayını bekliyor.
+    iki framework'ü kendi gizlilik manifestleriyle, WeatherKit ve App Group yetkileri);
+    kullanıcının onayıyla yüklendi (~3 dk, yerel doğrulama geçti). Uyarı: Google'ın iki
+    framework'ünün dSYM'i yok, o framework'lerin içindeki çökmeler sembolsüz görünür.
+    Sonraki yükleme için derleme numarası 3.
   - [ ] SF.10 App Store Connect bilgileri · SF.11 TestFlight · SF.12 incelemeye gönderme ·
     SF.13 web sitesine App Store bağlantısı ve "iPhone sürümü var mı?" sorusunun cevabı.
 - **Doğrulama (2026-11-03):** derleme; paket testleri (WeatherKit'in 34 durumu dahil);
