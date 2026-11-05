@@ -15,12 +15,12 @@ tanıtım metni 170 karakter, anahtar kelimeler 100 bayt). Hesaba bağlı adıml
 | SKU | izmirdolmus-ios |
 | Birincil kategori | Navigasyon (Navigation) |
 | İkincil kategori | Seyahat (Travel) |
-| Yaş sınırı | 4+ (bütün sorulara "Yok / Hayır"; reklamlar uygulamada genel izleyiciye uygun içerikle sınırlı) |
+| Yaş sınırı | Anket: Capabilities › Advertising "Evet"; diğer bütün sorular (sosyal medya dahil) "Hayır / Yok". Derecelendirmeyi Apple hesaplar, beklenen 4+ (reklamlar uygulamada genel izleyiciye uygun içerikle sınırlı) |
 | Fiyat | Ücretsiz |
 | Gizlilik politikası adresi | https://izmirdolmus.com/gizlilik (güncel sayfa yayına alınmış olmalı) |
 | Destek adresi (Support URL) | https://izmirdolmus.com |
 | Pazarlama adresi (Marketing URL) | https://izmirdolmus.com |
-| Telif (Copyright) | 2026 (geliştirici hesabındaki ad) |
+| Telif (Copyright) | 2026 Mert Ozturk (geliştirici hesabındaki ad) |
 | Üçüncü taraf içerik | Evet: İBB'nin açık verisi (hatlar, ücretler) ve kamuya açık etkinlik listeleri; kullanım hakkı var |
 
 Ad App Store'da başka bir uygulamada kullanılıyorsa: "İzmir Dolmuş: Hat ve Ücret".
