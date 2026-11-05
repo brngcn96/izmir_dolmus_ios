@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-11-05): Faz 0–9, Faz W ve Faz Y bitti (Faz 9'da analitik ertelendi); genel test turu ve ilk düzeltmeleri yapıldı (kalan bulgular aşağıda) · Faz 10 sürüyor: 1.0 (3) 5 Kasım'da incelemeye gönderildi ("Waiting for Review"); onaydan sonra yayını kullanıcı başlatacak, ardından site ve AdMob bağlantıları · çalışma düzeni (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-11-05): Faz 0–9, Faz W ve Faz Y bitti (Faz 9'da analitik ertelendi); genel test turu ve ilk düzeltmeleri yapıldı (kalan bulgular aşağıda) · Faz 10 sürüyor: 1.0 (3) 5 Kasım'da incelemeye gönderildi, ikili dosya denetiminde reddedildi (ITMS-91056, widget'ın gizlilik manifesti); düzeltilen 1.0 (4) aynı gün yüklendi, kullanıcı onu seçip yeniden gönderecek; onaydan sonra yayını kullanıcı başlatacak, ardından site ve AdMob bağlantıları · çalışma düzeni (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -1141,6 +1141,19 @@ TestFlight'taki sürümü deneyen kullanıcının yedi maddesi ve yapılanlar:
   - [x] SF.11 TestFlight: 1.0 (1)–(3) iç test grubunda.
   - [x] SF.12 İncelemeye gönderme (2026-11-05 17:08): 1.0 (3), "Waiting for Review". Yayın
     elle (onaydan sonra "Release This Version"). App Store kimliği `6830207329`.
+  - [x] SF.12b Ret ve 1.0 (4) (2026-11-05): 1.0 (3) ikili dosya denetiminde reddedildi.
+    Gerekçe App Store Connect'te görünmedi, yalnızca hesap sahibine (Mert) e-postayla geldi:
+    ITMS-91056, `PlugIns/IzmirDolmusWidgetsExtension.appex/PrivacyInfo.xcprivacy` geçersiz.
+    Widget manifesti SF.1'den beri `<?xml>` başlığı ve `<plist>` kökü olmadan, yalnızca
+    `<dict>` ile duruyordu; `plutil -lint` bunu kabul ediyor, SF.9'daki doğrulama da yalnızca
+    beyanlara bakmıştı. `plutil -convert xml1` ile kanonik plist'e çevrildi, içerik aynı;
+    arşivdeki dört manifestin dördü de `<plist>` köklü. Gerekçeli API'ler yeniden tarandı:
+    widget yalnızca `NSUserDefaults` kullanıyor (App Group, `1C8F.1`). Ana uygulamadaki disk
+    alanı ve açılış süresi sembolleri Google Mobile Ads'in ana ikili dosyaya gömülen kodundan
+    geliyor (framework'ü 51 KB'lık bir taslak) ve Google'ın manifestinde beyanlı. 1.0 (4)
+    kullanıcının onayıyla yüklendi (~3 dk). Sonraki yükleme için derleme numarası 5.
+  - [ ] SF.12c Yeniden gönderme (kullanıcı): build 4 işlenince 1.0 sürüm sayfasında build
+    3'ün yerine onu seç ve incelemeye gönder.
   - [ ] SF.13 Web sitesine App Store bağlantısı ve "iPhone sürümü var mı?" sorusunun cevabı;
     AdMob'da uygulamayı App Store kaydına bağlama (ikisi de yayından sonra).
 - **Doğrulama (2026-11-03):** derleme; paket testleri (WeatherKit'in 34 durumu dahil);
