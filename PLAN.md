@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-11-05): Faz 0–9, Faz W ve Faz Y bitti (Faz 9'da analitik ertelendi); genel test turu ve ilk düzeltmeleri yapıldı (kalan bulgular aşağıda) · Faz 10 sürüyor: 1.0 (1) reklamsız TestFlight'ta; reklamlı 1.0 (2) arşivi hazır, yükleme onay bekliyor; mağaza bilgileri ve incelemeye gönderme kullanıcıda · çalışma düzeni (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-11-05): Faz 0–9, Faz W ve Faz Y bitti (Faz 9'da analitik ertelendi); genel test turu ve ilk düzeltmeleri yapıldı (kalan bulgular aşağıda) · Faz 10 sürüyor: 1.0 (3) 5 Kasım'da incelemeye gönderildi ("Waiting for Review"); onaydan sonra yayını kullanıcı başlatacak, ardından site ve AdMob bağlantıları · çalışma düzeni (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -1134,8 +1134,15 @@ TestFlight'taki sürümü deneyen kullanıcının yedi maddesi ve yapılanlar:
   - [x] SF.9c 1.0 (3) (2026-11-05): test kullanıcısının geri bildirimiyle yapılan
     düzeltmeler; kullanıcının onayıyla arşivlenip yüklendi (~3 dk). Sonraki yükleme için
     derleme numarası 4.
-  - [ ] SF.10 App Store Connect bilgileri · SF.11 TestFlight · SF.12 incelemeye gönderme ·
-    SF.13 web sitesine App Store bağlantısı ve "iPhone sürümü var mı?" sorusunun cevabı.
+  - [x] SF.10 App Store Connect bilgileri (2026-11-05, kullanıcı): App Privacy yayımlandı;
+    App Information (kategoriler, yaş anketi, içerik hakları), fiyat ve ülkeler, 1.0 sürüm
+    sayfası. Yeni App Store Connect'te zorunlu iPhone sınıfı "Dynamic Island (medium
+    display)" (1206×2622); 6,9 inç görüntüler orada reddedildi, `screenshots-6.3/` eklendi.
+  - [x] SF.11 TestFlight: 1.0 (1)–(3) iç test grubunda.
+  - [x] SF.12 İncelemeye gönderme (2026-11-05 17:08): 1.0 (3), "Waiting for Review". Yayın
+    elle (onaydan sonra "Release This Version"). App Store kimliği `6830207329`.
+  - [ ] SF.13 Web sitesine App Store bağlantısı ve "iPhone sürümü var mı?" sorusunun cevabı;
+    AdMob'da uygulamayı App Store kaydına bağlama (ikisi de yayından sonra).
 - **Doğrulama (2026-11-03):** derleme; paket testleri (WeatherKit'in 34 durumu dahil);
   pakette iki manifest, `OFL.txt`, widget adı ve gömülü WeatherKit yetkisi; simülatörde UI
   test modunda başlıkta "21° Bornova · Açık" ve künye, Lisanslar ekranı; normal modda
