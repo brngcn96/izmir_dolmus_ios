@@ -11,8 +11,9 @@ enum AdUnit {
     static let appOpen = "ca-app-pub-3940256099942544/5575463023"
     static let interstitial = "ca-app-pub-3940256099942544/4411468910"
     #else
-    // AdMob'da iOS uygulaması ve birimleri henüz yok (2026-11-04). Kimlikler girilene kadar
-    // Release bilerek derlenmez: test birimleri ya da yer tutucular yayına çıkmasın.
-    #error("AdMob kimlikleri eksik: buraya banner, App Open ve geçiş birimlerini; proje ayarlarında Release'in ADMOB_APP_ID'sine uygulama kimliğini gir.")
+    static let banner = "ca-app-pub-1446443793128054/6289600733"
+    static let collapsibleBanner = banner
+    static let appOpen = "ca-app-pub-1446443793128054/4007052329"
+    static let interstitial = "ca-app-pub-1446443793128054/6577375343"
     #endif
 }

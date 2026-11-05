@@ -1,6 +1,6 @@
 # İzmir Dolmuş iOS — Plan
 
-Plan tarihi: 2026-10-08 · Durum (2026-11-04): Faz 0–8, Faz W ve Faz Y bitti; genel test turu ve ilk düzeltmeleri yapıldı (kalan bulgular aşağıda) · Faz 9 (reklam) kodu bitti, AdMob'daki iOS kimlikleri bekleniyor (o zamana kadar Release derlenmez; analitik ertelendi) · Faz 10 sürüyor: 1.0 (1) reklamsız TestFlight'ta; reklamlı 1.0 (2) kimlikler gelince yüklenecek, mağaza bilgileri ve incelemeye gönderme kullanıcıda · çalışma düzeni (aşağıda)
+Plan tarihi: 2026-10-08 · Durum (2026-11-05): Faz 0–9, Faz W ve Faz Y bitti (Faz 9'da analitik ertelendi); genel test turu ve ilk düzeltmeleri yapıldı (kalan bulgular aşağıda) · Faz 10 sürüyor: 1.0 (1) reklamsız TestFlight'ta; reklamlı 1.0 (2) arşivi hazır, yükleme onay bekliyor; mağaza bilgileri ve incelemeye gönderme kullanıcıda · çalışma düzeni (aşağıda)
 
 Hedef: Android'de yayında olan Flutter uygulamasının (v1.0.6) özellik eşiti bir
 native iOS sürümünü SwiftUI ile yazıp App Store'da yayınlamak; bunu yaparken
@@ -937,11 +937,12 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
   - Sıfırlanmış simülatörde "Ayarlar'ı aç" Ayarlar'ın kök sayfasına açıldı (o sırada
     simülatörün SettingsSearchReindexService süreci çöküyordu); gerçek cihazda bakılmalı.
 
-### [ ] Faz 9 — Reklam (analitik ertelendi)
+### [x] Faz 9 — Reklam (analitik ertelendi)
 - **Ön koşul (sende):** AdMob'da iOS uygulaması ve reklam birimleri (banner, App Open,
-  geçiş). Henüz yok (2026-11-04); Release onlar girilene kadar bilerek derlenmez.
+  geçiş). Kullanıcı 2026-11-05'te oluşturdu; kimlikler `AdUnit.swift`'te ve Release'in
+  `ADMOB_APP_ID`'sinde.
 - **Kullanıcının yapacakları (hesap):**
-  1. admob.google.com › Apps › Add app › iOS › "Is the app listed on a supported app
+  1. (yapıldı) admob.google.com › Apps › Add app › iOS › "Is the app listed on a supported app
      store?" No › ad "İzmir Dolmuş" › Add app; sonra Ad units › Add ad unit ile Banner,
      App open ve Interstitial. Uygulama kimliğini ve üç birim kimliğini Claude'a ver.
   2. Uygulama AB ya da Birleşik Krallık'ta da yayınlanacaksa: AdMob › Privacy & messaging ›
@@ -992,8 +993,9 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
   - [x] Gizlilik: politika güncellendi ve siteye `app-ads.txt` eklendi (Flutter repo'su,
     `privacy-ios` dalı, iki commit); App Privacy cevapları ve inceleme notu
     `AppStore/metadata-tr.md`'de (Google'ın SDK manifestlerinden).
-  - [ ] Gerçek kimlikler: `AdUnit.swift`'teki `#error`'un yerine birimler, Release'in
-    `ADMOB_APP_ID`'sine uygulama kimliği; sonra 1.0 (2) yüklemesi.
+  - [x] Gerçek kimlikler (2026-11-05): `AdUnit.swift`'teki derleme engelinin yerine birimler,
+    Release'in `ADMOB_APP_ID`'sine uygulama kimliği. Release derleniyor; 1.0 (2) arşivi
+    alındı (bkz. Faz 10).
   - [ ] S9.1 Analitik (ertelendi).
 - **Doğrulama (2026-11-04):** paket testleri (109, reklam kuralları dahil); UI testleri
   (15/15, reklamsız test modunda; erişilebilirlik denetimleri dahil); Debug derlemesi (tek
@@ -1010,8 +1012,12 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
     ile kapandı.
   - Geçiş reklamı: hat detayından geri dönünce gösterildi, "Close" ile kapandı; aynı gün
     ikinci geri dönüşte gösterilmedi.
+  - Release, gerçek kimliklerle (2026-11-05): simülatörde açıldı; izleme izni sorusu
+    Google'ın ara penceresi olmadan doğrudan Türkçe metnimizle (AdMob hesabında açıklama
+    mesajı yok); banner gerçek birimden "Test mode" etiketiyle yüklendi (simülatör test
+    cihazı). "Ask App Not to Track" denince uygulama çalışmaya, banner yüklenmeye devam etti.
   - Denenmedi: tanıtımı "Atla"yla geçip konum iznini Anasayfa'da verme yolunda izleme
-    izninin sırası (simülatörde izleme kararı sıfırlanmadı).
+    izninin sırası (simülatörde izleme kararı sıfırlanmadı); gerçek cihazda gerçek reklam.
 - **Bulgular:**
   - Hat detayındaki geri bildirim notunun klavye çubuğu dört "Bitti" gösteriyordu
     (`Section`'a eklenen `toolbar` her satıra uygulanıyordu); düzeltildi.
@@ -1082,6 +1088,10 @@ Süreler senin tarafındaki kaba tahmindir; bu düzende fazlar senin açından k
     hesaba yeniden girmeli). Bu yüzden zorunlu gerekçeli API'ler arşivdeki iki ikili
     dosyada elle tarandı: yalnızca `UserDefaults` var, iki manifestte de beyanlı. Sonraki
     yükleme için derleme numarası 2'ye çıkarıldı.
+  - [ ] SF.9b Reklamlı 1.0 (2) (2026-11-05): `build/IzmirDolmus.xcarchive` alındı ve
+    doğrulandı (gerçek AdMob uygulama kimliği, 50 SKAdNetwork, izleme izni metni, Google'ın
+    iki framework'ü kendi gizlilik manifestleriyle, WeatherKit ve App Group yetkileri).
+    Yükleme kullanıcının onayını bekliyor.
   - [ ] SF.10 App Store Connect bilgileri · SF.11 TestFlight · SF.12 incelemeye gönderme ·
     SF.13 web sitesine App Store bağlantısı ve "iPhone sürümü var mı?" sorusunun cevabı.
 - **Doğrulama (2026-11-03):** derleme; paket testleri (WeatherKit'in 34 durumu dahil);
