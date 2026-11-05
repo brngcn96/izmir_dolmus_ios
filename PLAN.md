@@ -1104,10 +1104,11 @@ TestFlight'taki sürümü deneyen kullanıcının yedi maddesi ve yapılanlar:
     Hatlar araması, Etkinlikler. Bilerek dışarıda kalanlar: seçenekler listesi (yarı saydam
     sheet'te mavi şerit) ve hat detayı ("Yukarıda Belirtilen Sınırlar Arası Bindi" çipi;
     396 hat grubunun 300'ünde var).
-  - [ ] SF.7b Ekran görüntülerini yenileme: test kullanıcısının geri bildiriminden sonra
-    (2026-11-05) tab bar (adı yazılı Hatlar sekmesi) ve yazı boyutu değişti; görüntüler
-    incelemeye göndermeden önce yeniden alınmalı. Debug'da test banner'ı göründüğü için
-    görüntü çekiminde reklamı kapatan bir yol gerekiyor.
+  - [x] SF.7b Ekran görüntülerini yenileme (2026-11-05): test kullanıcısının geri
+    bildiriminden sonra tab bar ve yazı boyutu değişmişti. Aynı simülatörde, reklamsız
+    (`-noAds`, yalnızca Debug) yeniden çekildi; altısı yenilendi, kilit ekranı aynı kaldı
+    (Live Activity kartı değişmedi, eskisinde "Carrier" yazısı yok). Seçenekler listesi
+    artık opak ve önerilen belirgin olduğu için sekizinci görüntü oldu (`08-secenekler`).
   - [x] SF.8 Team ve imzalama (2026-11-03): üyelik onaylandı, takım `C96G54LS5G` (Mert
     Ozturk, bireysel) üç hedefte; kullanıcı WeatherKit'i App Services'ta açtı ve telefona
     (iPhone 15) Xcode'dan derleyince cihaz kaydoldu, profiller oluştu (uygulamada

@@ -14,8 +14,11 @@ enum AppEnvironment {
     #if DEBUG
     static let isUITesting = ProcessInfo.processInfo.arguments.contains("-uiTesting")
     private static let keepsUITestData = ProcessInfo.processInfo.arguments.contains("-uiTestingKeepData")
+    /// Reklamsız açılış (`-noAds`): mağaza ekran görüntüleri gerçek veriyle ama banner'sız.
+    static let isAdFree = ProcessInfo.processInfo.arguments.contains("-noAds")
     #else
     static let isUITesting = false
+    static let isAdFree = false
     #endif
 
     static let defaults: UserDefaults = {

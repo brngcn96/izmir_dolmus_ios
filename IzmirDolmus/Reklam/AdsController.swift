@@ -46,7 +46,7 @@ final class AdsController: NSObject {
 
     private var isShowingFullScreen = false
 
-    init(isEnabled: Bool = !AppEnvironment.isUITesting, defaults: UserDefaults = AppEnvironment.defaults) {
+    init(isEnabled: Bool = !AppEnvironment.isUITesting && !AppEnvironment.isAdFree, defaults: UserDefaults = AppEnvironment.defaults) {
         self.isEnabled = isEnabled
         self.defaults = defaults
         policy = AdPolicy(

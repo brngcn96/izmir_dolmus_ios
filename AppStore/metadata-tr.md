@@ -72,8 +72,9 @@ dolmuş,minibüs,izmir,ulaşım,hat,güzergah,ücret,yol tarifi,bornova,buca,kar
 
 ## Ekran görüntüleri
 
-iPhone 6,9 inç (1320×2868): `screenshots-6.9/` içindeki yedi dosyayı numara sırasıyla
+iPhone 6,9 inç (1320×2868): `screenshots-6.9/` içindeki sekiz dosyayı numara sırasıyla
 yükle. İlk üçü sayfada öne çıkıyor: Anasayfa, haritada tarif, kilit ekranında yolculuk.
+Görüntülerde reklam yok (Debug derlemesi `-noAds` argümanıyla çekildi).
 
 ## İnceleme notu (App Review Information › Notes)
 
